@@ -1,0 +1,23 @@
+# Comunes
+node_modules/
+dist/
+build/
+*.log
+.DS_Store
+
+# Frontend (Ionic/Angular)
+frontend/node_modules/
+frontend/www/
+frontend/.angular/cache/
+
+# Backend (Express/Sequelize)
+backend/node_modules/
+backend/.env
+backend/.env.local
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
