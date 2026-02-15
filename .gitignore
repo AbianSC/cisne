@@ -12,6 +12,7 @@ frontend/.angular/cache/
 
 # Backend (Express/Sequelize)
 backend/node_modules/
+backend/config/db.config.js
 backend/.env
 backend/.env.local
 
