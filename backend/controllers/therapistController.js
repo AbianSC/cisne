@@ -1,5 +1,5 @@
 // controllers/therapistController.js
-const { Therapist, User, Centre, Patient, Course, Resource, Treats, Employs, Buys, Publish } = require('../sequelize-models');
+const { Therapist, User, Centre, Patient, Course, Resource, Treats, Employs, Buys, Publish } = require('../models/cisne.model');
 const { Op } = require('sequelize');
 
 /**

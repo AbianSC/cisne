@@ -1,5 +1,5 @@
 // controllers/invoiceController.js
-const { Invoice, ServiceInvoice, CourseInvoice, Service, Course } = require('../sequelize-models');
+const { Invoice, ServiceInvoice, CourseInvoice, Service, Course } = require('../models/cisne.model');
 const { Op } = require('sequelize');
 
 /**

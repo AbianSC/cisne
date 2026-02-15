@@ -1,5 +1,5 @@
 // controllers/userController.js
-const { User, Centre, Therapist, Patient } = require('../sequelize-models');
+const { User, Centre, Therapist, Patient } = require('../models/cisne.model');
 
 /**
  * Controlador de Usuarios

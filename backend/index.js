@@ -1,31 +1,131 @@
 const express = require("express");
+const cors = require("cors");
 
 const app = express();
 
+// ==================== MIDDLEWARES ====================
 
+// CORS - Configuración para Ionic
+const corsOptions = {
+  origin: '*', // En producción especificar el dominio exacto
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
+// Body parser
 app.use(express.json());
-
 app.use(express.urlencoded({ extended: true }));
+
+// ==================== BASE DE DATOS ====================
 
 const db = require("./models");
 
-const routes = require("./routes");
+// Sincronizar base de datos
+db.sequelize.sync()
+  .then(() => {
+    console.log("✅ Database synchronized");
+  })
+  .catch((err) => {
+    console.error("❌ Error syncing database:", err);
+  });
 
-db.sequelize.sync();
-
-// normal use. Doesn't delete the database data
-
-// In development, you may need to drop existing tables and re-sync database
+// En desarrollo, puedes descomentar para recrear las tablas
 // db.sequelize.sync({ force: true }).then(() => {
 //   console.log("Drop and re-sync db.");
 // });
 
+// ==================== RUTAS ====================
+
+// Importar rutas
+const userRoutes = require('./routes/userRoutes');
+const centreRoutes = require('./routes/centreRoutes');
+const therapistRoutes = require('./routes/therapistRoutes');
+const patientRoutes = require('./routes/patientRoutes');
+const serviceRoutes = require('./routes/serviceRoutes');
+const courseRoutes = require('./routes/courseRoutes');
+const resourceRoutes = require('./routes/resourceRoutes');
+const invoiceRoutes = require('./routes/invoiceRoutes');
+
+// Ruta raíz
 app.get("/", (req, res) => {
-  res.json({ message: "Welcome to CISNE application."});
+  res.json({ 
+    message: "Welcome to CISNE application.",
+    version: "1.0.0",
+    endpoints: {
+      users: "/api/users",
+      centres: "/api/centres",
+      therapists: "/api/therapists",
+      patients: "/api/patients",
+      services: "/api/services",
+      courses: "/api/courses",
+      resources: "/api/resources",
+      invoices: "/api/invoices"
+    }
+  });
 });
 
+// Health check
+app.get("/health", async (req, res) => {
+  try {
+    await db.sequelize.authenticate();
+    res.status(200).json({
+      success: true,
+      message: "Server is running",
+      database: "Connected"
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server is running but database is disconnected",
+      error: error.message
+    });
+  }
+});
+
+// Montar rutas de la API
+app.use('/api/users', userRoutes);
+app.use('/api/centres', centreRoutes);
+app.use('/api/therapists', therapistRoutes);
+app.use('/api/patients', patientRoutes);
+app.use('/api/services', serviceRoutes);
+app.use('/api/courses', courseRoutes);
+app.use('/api/resources', resourceRoutes);
+app.use('/api/invoices', invoiceRoutes);
+
+// ==================== MANEJO DE ERRORES ====================
+
+// Ruta no encontrada
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    message: 'Ruta no encontrada'
+  });
+});
+
+// Manejador de errores global
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+
+  const statusCode = err.statusCode || 500;
+  const message = err.message || 'Error interno del servidor';
+
+  res.status(statusCode).json({
+    success: false,
+    message: message,
+    error: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
+
+// ==================== INICIO DEL SERVIDOR ====================
 
 const PORT = process.env.PORT || 8080;
+
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log('╔════════════════════════════════════════════╗');
+  console.log(`║  🚀 Servidor corriendo en puerto ${PORT}      ║`);
+  console.log(`║  🌐 URL: http://localhost:${PORT}             ║`);
+  console.log('╚════════════════════════════════════════════╝');
 });
+
+module.exports = app;
