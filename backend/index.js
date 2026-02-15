@@ -1,4 +1,5 @@
 const express = require("express");
+require("dotenv").config();
 const cors = require("cors");
 
 const app = express();
@@ -22,16 +23,21 @@ app.use(express.urlencoded({ extended: true }));
 const db = require("./models");
 
 // Sincronizar base de datos
-db.sequelize.sync()
+db.sequelize.sync({ force: true})
   .then(() => {
-    console.log("✅ Database synchronized");
+    console.log("✅ Drop and re-sync db.");
   })
   .catch((err) => {
     console.error("❌ Error syncing database:", err);
   });
 
 // En desarrollo, puedes descomentar para recrear las tablas
+//BORRA y crea todo desde cero:
 // db.sequelize.sync({ force: true }).then(() => {
+//   console.log("Drop and re-sync db.");
+// });
+// Crea/ajusta sin borrar:
+// db.sequelize.sync({ alter: true }).then(() => {
 //   console.log("Drop and re-sync db.");
 // });
 
