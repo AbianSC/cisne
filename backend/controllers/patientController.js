@@ -1,6 +1,5 @@
-// controllers/patientController.js
-const { Patient, User, Therapist, Service, Resource, Treats, Pays, Consume } = require('../models/cisne.model');
-const { Op } = require('sequelize');
+const db = require("../models");
+const Patient = db.Patient;
 
 /**
  * Controlador de Pacientes

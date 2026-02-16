@@ -3,7 +3,9 @@ module.exports = (sequelize, Sequelize) => {
 
   const User = sequelize.define('User', {
     Id_user: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    email: { type: DataTypes.STRING(255), allowNull: false, unique: true }
+    email: { type: DataTypes.STRING(255), allowNull: false, unique: true },
+    password: { type: DataTypes.STRING(255), allowNull: false},
+    role: { type: DataTypes.ENUM("ADMIN", "CENTRE", "THERAPIST", "PATIENT"), allowNull: false, defaultValue: "PATIENT"}
   }, { tableName: 'USER', timestamps: false });
 
   const Invoice = sequelize.define('Invoice', {

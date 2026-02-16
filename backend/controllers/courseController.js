@@ -1,6 +1,5 @@
-// controllers/courseController.js
-const { Course, CourseInvoice, Invoice, Centre, Therapist } = require('../models/cisne.model');
-const { Op } = require('sequelize');
+const db = require("../models");
+const Course = db.Course;
 
 /**
  * Controlador de Cursos

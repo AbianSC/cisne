@@ -38,7 +38,7 @@ db.sequelize.sync({ force: true})
 // });
 // Crea/ajusta sin borrar:
 // db.sequelize.sync({ alter: true }).then(() => {
-//   console.log("Drop and re-sync db.");
+//   console.log("sync database");
 // });
 
 // ==================== RUTAS ====================
@@ -52,6 +52,7 @@ const serviceRoutes = require('./routes/serviceRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const resourceRoutes = require('./routes/resourceRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 // Ruta raíz
 app.get("/", (req, res) => {
@@ -66,7 +67,8 @@ app.get("/", (req, res) => {
       services: "/api/services",
       courses: "/api/courses",
       resources: "/api/resources",
-      invoices: "/api/invoices"
+      invoices: "/api/invoices",
+      auth: "/api/auth"
     }
   });
 });
@@ -98,6 +100,7 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/invoices', invoiceRoutes);
+app.use('/api/auth', authRoutes);
 
 // ==================== MANEJO DE ERRORES ====================
 

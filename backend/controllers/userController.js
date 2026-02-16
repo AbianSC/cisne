@@ -1,5 +1,5 @@
-// controllers/userController.js
-const { User, Centre, Therapist, Patient } = require('../models/cisne.model');
+const db = require("../models");
+const User = db.User;
 
 /**
  * Controlador de Usuarios

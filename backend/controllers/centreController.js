@@ -1,6 +1,5 @@
-// controllers/centreController.js
-const { Centre, User, Therapist, Service, Course, Employs, Posts } = require('../models/cisne.model');
-const { Op } = require('sequelize');
+const db = require("../models");
+const Centre = db.Centre;
 
 /**
  * Controlador de Centros

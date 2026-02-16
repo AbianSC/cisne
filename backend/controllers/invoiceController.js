@@ -1,6 +1,5 @@
-// controllers/invoiceController.js
-const { Invoice, ServiceInvoice, CourseInvoice, Service, Course } = require('../models/cisne.model');
-const { Op } = require('sequelize');
+const db = require("../models");
+const Invoice = db.Invoice;
 
 /**
  * Controlador de Facturas

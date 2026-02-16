@@ -1,6 +1,5 @@
-// controllers/serviceController.js
-const { Service, ServiceInvoice, Invoice, Patient, Centre } = require('../models/cisne.model');
-const { Op } = require('sequelize');
+const db = require("../models");
+const Service = db.Service;
 
 /**
  * Controlador de Servicios
