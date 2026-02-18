@@ -67,6 +67,7 @@ module.exports = (sequelize, Sequelize) => {
       references: { model: 'USER', key: 'Id_user' }
     },
     CIF: { type: DataTypes.STRING(20), allowNull: false, unique: true },
+    name: { type: DataTypes.STRING(100), allowNull: false},
     location: { type: DataTypes.STRING(255) },
     Id_service: {
       type: DataTypes.INTEGER,
@@ -80,6 +81,8 @@ module.exports = (sequelize, Sequelize) => {
       primaryKey: true,
       references: { model: 'USER', key: 'Id_user' }
     },
+    firstname: { type: DataTypes.STRING(100), allowNull: false },
+    lastname: { type: DataTypes.STRING(150), allowNull: false },
     NIF: { type: DataTypes.STRING(20), allowNull: false, unique: true },
     Society_Id: { type: DataTypes.STRING(50) },
     Profession: { type: DataTypes.STRING(100) }
@@ -91,6 +94,8 @@ module.exports = (sequelize, Sequelize) => {
       primaryKey: true,
       references: { model: 'USER', key: 'Id_user' }
     },
+    firstname: { type: DataTypes.STRING(100), allowNull: false },
+    lastname: { type: DataTypes.STRING(150), allowNull: false },
     NIF: { type: DataTypes.STRING(20), allowNull: false, unique: true },
     diagnosis: { type: DataTypes.STRING(255) }
   }, { tableName: 'PATIENT', timestamps: false });

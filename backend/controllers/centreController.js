@@ -1,9 +1,16 @@
 const db = require("../models");
 const Centre = db.Centre;
+const User = db.User;
+const Therapist = db.Therapist;
+const Employs = db.Employs;
+const Course = db.Course;
+const Service = db.Service;
+
+const Op = db.Sequelize.Op;
 
 /**
  * Controlador de Centros
- * Maneja las operaciones CRUD y relaciones de centros de terapia
+ * CRUD y relaciones (terapeutas y cursos)
  */
 
 // @desc    Obtener todos los centros
@@ -13,29 +20,15 @@ exports.getAllCentres = async (req, res) => {
   try {
     const centres = await Centre.findAll({
       include: [
-        {
-          model: User,
-          attributes: ['email']
-        },
-        {
-          model: Service,
-          required: false
-        }
+        { model: User, attributes: ["email", "role"] },
+        { model: Service, attributes: ["Id_service", "Name"], required: false }
       ]
     });
 
-    res.status(200).json({
-      success: true,
-      count: centres.length,
-      data: centres
-    });
+    res.status(200).json({ success: true, count: centres.length, data: centres });
   } catch (error) {
-    console.error('Error en getAllCentres:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener centros',
-      error: error.message
-    });
+    console.error("Error en getAllCentres:", error);
+    res.status(500).json({ success: false, message: "Error al obtener centros", error: error.message });
   }
 };
 
@@ -48,105 +41,54 @@ exports.getCentreById = async (req, res) => {
 
     const centre = await Centre.findByPk(id, {
       include: [
-        {
-          model: User,
-          attributes: ['email']
-        },
-        {
-          model: Therapist,
-          as: 'therapists',
-          through: { attributes: ['Contract'] }
-        },
-        {
-          model: Course,
-          as: 'courses',
-          through: { attributes: ['Post_date'] }
-        }
+        { model: User, attributes: ["email", "role"] },
+        { model: Service, attributes: ["Id_service", "Name"], required: false }
       ]
     });
 
-    if (!centre) {
-      return res.status(404).json({
-        success: false,
-        message: 'Centro no encontrado'
-      });
-    }
+    if (!centre) return res.status(404).json({ success: false, message: "Centro no encontrado" });
 
-    res.status(200).json({
-      success: true,
-      data: centre
-    });
+    res.status(200).json({ success: true, data: centre });
   } catch (error) {
-    console.error('Error en getCentreById:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener centro',
-      error: error.message
-    });
+    console.error("Error en getCentreById:", error);
+    res.status(500).json({ success: false, message: "Error al obtener centro", error: error.message });
   }
 };
 
-// @desc    Crear un nuevo centro
+// @desc    Crear un centro
 // @route   POST /api/centres
 // @access  Private
 exports.createCentre = async (req, res) => {
   try {
-    const { Id_user_centre, CIF, location, Id_service } = req.body;
+    const { Id_user_centre, CIF, name, location, Id_service } = req.body;
 
-    // Validar campos requeridos
-    if (!Id_user_centre || !CIF) {
-      return res.status(400).json({
-        success: false,
-        message: 'Id_user_centre y CIF son requeridos'
-      });
+    if (!Id_user_centre || !CIF || !name) {
+      return res.status(400).json({ success: false, message: "Id_user_centre, CIF y name son requeridos" });
     }
 
-    // Verificar que el usuario existe
     const user = await User.findByPk(Id_user_centre);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'Usuario no encontrado'
-      });
+    if (!user) return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+
+    const existingCIF = await Centre.findOne({ where: { CIF } });
+    if (existingCIF) return res.status(409).json({ success: false, message: "El CIF ya está registrado" });
+
+    const existingCentreUser = await Centre.findOne({ where: { Id_user_centre } });
+    if (existingCentreUser) {
+      return res.status(409).json({ success: false, message: "Este usuario ya está registrado como centro" });
     }
 
-    // Verificar si el CIF ya existe
-    const existingCentre = await Centre.findOne({ where: { CIF } });
-    if (existingCentre) {
-      return res.status(409).json({
-        success: false,
-        message: 'El CIF ya está registrado'
-      });
+    // Si mandas Id_service, comprobamos que exista
+    if (Id_service) {
+      const service = await Service.findByPk(Id_service);
+      if (!service) return res.status(404).json({ success: false, message: "Servicio no encontrado" });
     }
 
-    // Verificar si el usuario ya es un centro
-    const userCentre = await Centre.findOne({ where: { Id_user_centre } });
-    if (userCentre) {
-      return res.status(409).json({
-        success: false,
-        message: 'Este usuario ya está registrado como centro'
-      });
-    }
+    const centre = await Centre.create({ Id_user_centre, CIF, name, location, Id_service });
 
-    const centre = await Centre.create({
-      Id_user_centre,
-      CIF,
-      location,
-      Id_service
-    });
-
-    res.status(201).json({
-      success: true,
-      message: 'Centro creado exitosamente',
-      data: centre
-    });
+    res.status(201).json({ success: true, message: "Centro creado exitosamente", data: centre });
   } catch (error) {
-    console.error('Error en createCentre:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al crear centro',
-      error: error.message
-    });
+    console.error("Error en createCentre:", error);
+    res.status(500).json({ success: false, message: "Error al crear centro", error: error.message });
   }
 };
 
@@ -159,39 +101,29 @@ exports.updateCentre = async (req, res) => {
     const { CIF, location, Id_service } = req.body;
 
     const centre = await Centre.findByPk(id);
+    if (!centre) return res.status(404).json({ success: false, message: "Centro no encontrado" });
 
-    if (!centre) {
-      return res.status(404).json({
-        success: false,
-        message: 'Centro no encontrado'
-      });
-    }
-
-    // Verificar si el nuevo CIF ya existe (y no es el mismo centro)
     if (CIF && CIF !== centre.CIF) {
-      const existingCentre = await Centre.findOne({ where: { CIF } });
-      if (existingCentre) {
-        return res.status(409).json({
-          success: false,
-          message: 'El CIF ya está registrado'
-        });
-      }
+      const existingCIF = await Centre.findOne({ where: { CIF } });
+      if (existingCIF) return res.status(409).json({ success: false, message: "El CIF ya está registrado" });
     }
 
-    await centre.update({ CIF, location, Id_service });
+    if (Id_service) {
+      const service = await Service.findByPk(Id_service);
+      if (!service) return res.status(404).json({ success: false, message: "Servicio no encontrado" });
+    }
 
-    res.status(200).json({
-      success: true,
-      message: 'Centro actualizado exitosamente',
-      data: centre
+    await centre.update({
+      CIF: CIF ?? centre.CIF,
+      name: name ?? centre.name,
+      location: location ?? centre.location,
+      Id_service: Id_service ?? centre.Id_service
     });
+
+    res.status(200).json({ success: true, message: "Centro actualizado exitosamente", data: centre });
   } catch (error) {
-    console.error('Error en updateCentre:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al actualizar centro',
-      error: error.message
-    });
+    console.error("Error en updateCentre:", error);
+    res.status(500).json({ success: false, message: "Error al actualizar centro", error: error.message });
   }
 };
 
@@ -203,27 +135,14 @@ exports.deleteCentre = async (req, res) => {
     const { id } = req.params;
 
     const centre = await Centre.findByPk(id);
-
-    if (!centre) {
-      return res.status(404).json({
-        success: false,
-        message: 'Centro no encontrado'
-      });
-    }
+    if (!centre) return res.status(404).json({ success: false, message: "Centro no encontrado" });
 
     await centre.destroy();
 
-    res.status(200).json({
-      success: true,
-      message: 'Centro eliminado exitosamente'
-    });
+    res.status(200).json({ success: true, message: "Centro eliminado exitosamente" });
   } catch (error) {
-    console.error('Error en deleteCentre:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al eliminar centro',
-      error: error.message
-    });
+    console.error("Error en deleteCentre:", error);
+    res.status(500).json({ success: false, message: "Error al eliminar centro", error: error.message });
   }
 };
 
@@ -237,34 +156,18 @@ exports.getCentreTherapists = async (req, res) => {
     const centre = await Centre.findByPk(id, {
       include: [{
         model: Therapist,
-        as: 'therapists',
-        through: { attributes: ['Contract'] },
-        include: [{
-          model: User,
-          attributes: ['email']
-        }]
+        as: "therapists",
+        through: { attributes: ["Contract"] },
+        include: [{ model: User, attributes: ["email", "role"] }]
       }]
     });
 
-    if (!centre) {
-      return res.status(404).json({
-        success: false,
-        message: 'Centro no encontrado'
-      });
-    }
+    if (!centre) return res.status(404).json({ success: false, message: "Centro no encontrado" });
 
-    res.status(200).json({
-      success: true,
-      count: centre.therapists.length,
-      data: centre.therapists
-    });
+    res.status(200).json({ success: true, count: centre.therapists.length, data: centre.therapists });
   } catch (error) {
-    console.error('Error en getCentreTherapists:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener terapeutas del centro',
-      error: error.message
-    });
+    console.error("Error en getCentreTherapists:", error);
+    res.status(500).json({ success: false, message: "Error al obtener terapeutas del centro", error: error.message });
   }
 };
 
@@ -277,58 +180,29 @@ exports.addTherapistToCentre = async (req, res) => {
     const { Id_user_therapist, Contract } = req.body;
 
     if (!Id_user_therapist) {
-      return res.status(400).json({
-        success: false,
-        message: 'Id_user_therapist es requerido'
-      });
+      return res.status(400).json({ success: false, message: "Id_user_therapist es requerido" });
     }
 
     const centre = await Centre.findByPk(id);
-    if (!centre) {
-      return res.status(404).json({
-        success: false,
-        message: 'Centro no encontrado'
-      });
-    }
+    if (!centre) return res.status(404).json({ success: false, message: "Centro no encontrado" });
 
     const therapist = await Therapist.findByPk(Id_user_therapist);
-    if (!therapist) {
-      return res.status(404).json({
-        success: false,
-        message: 'Terapeuta no encontrado'
-      });
-    }
+    if (!therapist) return res.status(404).json({ success: false, message: "Terapeuta no encontrado" });
 
-    // Verificar si la relación ya existe
     const existingRelation = await Employs.findOne({
-      where: {
-        Id_user_centre: id,
-        Id_user_therapist: Id_user_therapist
-      }
+      where: { Id_user_centre: id, Id_user_therapist }
     });
 
     if (existingRelation) {
-      return res.status(409).json({
-        success: false,
-        message: 'El terapeuta ya está empleado en este centro'
-      });
+      return res.status(409).json({ success: false, message: "El terapeuta ya está empleado en este centro" });
     }
 
-    await centre.addTherapist(therapist, {
-      through: { Contract: Contract || 'No especificado' }
-    });
+    await centre.addTherapist(therapist, { through: { Contract: Contract || "No especificado" } });
 
-    res.status(201).json({
-      success: true,
-      message: 'Terapeuta agregado al centro exitosamente'
-    });
+    res.status(201).json({ success: true, message: "Terapeuta agregado al centro exitosamente" });
   } catch (error) {
-    console.error('Error en addTherapistToCentre:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al agregar terapeuta al centro',
-      error: error.message
-    });
+    console.error("Error en addTherapistToCentre:", error);
+    res.status(500).json({ success: false, message: "Error al agregar terapeuta al centro", error: error.message });
   }
 };
 
@@ -340,34 +214,17 @@ exports.removeTherapistFromCentre = async (req, res) => {
     const { id, therapistId } = req.params;
 
     const centre = await Centre.findByPk(id);
-    if (!centre) {
-      return res.status(404).json({
-        success: false,
-        message: 'Centro no encontrado'
-      });
-    }
+    if (!centre) return res.status(404).json({ success: false, message: "Centro no encontrado" });
 
     const therapist = await Therapist.findByPk(therapistId);
-    if (!therapist) {
-      return res.status(404).json({
-        success: false,
-        message: 'Terapeuta no encontrado'
-      });
-    }
+    if (!therapist) return res.status(404).json({ success: false, message: "Terapeuta no encontrado" });
 
     await centre.removeTherapist(therapist);
 
-    res.status(200).json({
-      success: true,
-      message: 'Terapeuta removido del centro exitosamente'
-    });
+    res.status(200).json({ success: true, message: "Terapeuta removido del centro exitosamente" });
   } catch (error) {
-    console.error('Error en removeTherapistFromCentre:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al remover terapeuta del centro',
-      error: error.message
-    });
+    console.error("Error en removeTherapistFromCentre:", error);
+    res.status(500).json({ success: false, message: "Error al remover terapeuta del centro", error: error.message });
   }
 };
 
@@ -379,32 +236,15 @@ exports.getCentreCourses = async (req, res) => {
     const { id } = req.params;
 
     const centre = await Centre.findByPk(id, {
-      include: [{
-        model: Course,
-        as: 'courses',
-        through: { attributes: ['Post_date'] }
-      }]
+      include: [{ model: Course, as: "courses", through: { attributes: ["Post_date"] } }]
     });
 
-    if (!centre) {
-      return res.status(404).json({
-        success: false,
-        message: 'Centro no encontrado'
-      });
-    }
+    if (!centre) return res.status(404).json({ success: false, message: "Centro no encontrado" });
 
-    res.status(200).json({
-      success: true,
-      count: centre.courses.length,
-      data: centre.courses
-    });
+    res.status(200).json({ success: true, count: centre.courses.length, data: centre.courses });
   } catch (error) {
-    console.error('Error en getCentreCourses:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener cursos del centro',
-      error: error.message
-    });
+    console.error("Error en getCentreCourses:", error);
+    res.status(500).json({ success: false, message: "Error al obtener cursos del centro", error: error.message });
   }
 };
 
@@ -416,87 +256,42 @@ exports.postCourse = async (req, res) => {
     const { id } = req.params;
     const { Id_course, Post_date } = req.body;
 
-    if (!Id_course) {
-      return res.status(400).json({
-        success: false,
-        message: 'Id_course es requerido'
-      });
-    }
+    if (!Id_course) return res.status(400).json({ success: false, message: "Id_course es requerido" });
 
     const centre = await Centre.findByPk(id);
-    if (!centre) {
-      return res.status(404).json({
-        success: false,
-        message: 'Centro no encontrado'
-      });
-    }
+    if (!centre) return res.status(404).json({ success: false, message: "Centro no encontrado" });
 
     const course = await Course.findByPk(Id_course);
-    if (!course) {
-      return res.status(404).json({
-        success: false,
-        message: 'Curso no encontrado'
-      });
-    }
+    if (!course) return res.status(404).json({ success: false, message: "Curso no encontrado" });
 
-    await centre.addCourse(course, {
-      through: { Post_date: Post_date || new Date() }
-    });
+    await centre.addCourse(course, { through: { Post_date: Post_date || new Date() } });
 
-    res.status(201).json({
-      success: true,
-      message: 'Curso publicado exitosamente'
-    });
+    res.status(201).json({ success: true, message: "Curso publicado exitosamente" });
   } catch (error) {
-    console.error('Error en postCourse:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al publicar curso',
-      error: error.message
-    });
+    console.error("Error en postCourse:", error);
+    res.status(500).json({ success: false, message: "Error al publicar curso", error: error.message });
   }
 };
 
-// @desc    Buscar centros por ubicación
-// @route   GET /api/centres/search?location=xxx
+// @desc    Buscar centros por ubicación o CIF
+// @route   GET /api/centres/search?location=xxx&CIF=yyy
 // @access  Public
 exports.searchCentres = async (req, res) => {
   try {
     const { location, CIF } = req.query;
 
     const whereClause = {};
-
-    if (location) {
-      whereClause.location = {
-        [Op.like]: `%${location}%`
-      };
-    }
-
-    if (CIF) {
-      whereClause.CIF = {
-        [Op.like]: `%${CIF}%`
-      };
-    }
+    if (location) whereClause.location = { [Op.like]: `%${location}%` };
+    if (CIF) whereClause.CIF = { [Op.like]: `%${CIF}%` };
 
     const centres = await Centre.findAll({
       where: whereClause,
-      include: [{
-        model: User,
-        attributes: ['email']
-      }]
+      include: [{ model: User, attributes: ["email", "role"] }]
     });
 
-    res.status(200).json({
-      success: true,
-      count: centres.length,
-      data: centres
-    });
+    res.status(200).json({ success: true, count: centres.length, data: centres });
   } catch (error) {
-    console.error('Error en searchCentres:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al buscar centros',
-      error: error.message
-    });
+    console.error("Error en searchCentres:", error);
+    res.status(500).json({ success: false, message: "Error al buscar centros", error: error.message });
   }
 };

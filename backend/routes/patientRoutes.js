@@ -34,9 +34,6 @@ router.route('/:id')
 // Terapeutas del paciente
 router.get('/:id/therapists', getPatientTherapists);
 
-// Historial médico
-router.get('/:id/medical-history', getMedicalHistory);
-
 // Servicios del paciente
 router.route('/:id/services')
   .get(getPatientServices)
@@ -46,8 +43,5 @@ router.route('/:id/services')
 router.route('/:id/resources')
   .get(getPatientResources)
   .post(consumeResource);
-
-// Estadísticas
-router.get('/:id/stats', getPatientStats);
 
 module.exports = router;
