@@ -1,35 +1,41 @@
 const db = require("../models");
+
 const Course = db.Course;
+const CourseInvoice = db.CourseInvoice;
+const Invoice = db.Invoice;
+
+const Centre = db.Centre;
+const Therapist = db.Therapist;
+const User = db.User;
+
+const Posts = db.Posts; // tabla puente Centre-Course
+
+const Op = db.Sequelize.Op;
+
+const isAdmin = (req) => req.user?.role === "ADMIN";
+const isCentre = (req) => req.user?.role === "CENTRE";
+
+// Comprueba si un curso pertenece al centro logado (existe en POSTS)
+const courseBelongsToCentre = async (courseId, centreId) => {
+  const rel = await Posts.findOne({
+    where: { Id_course: courseId, Id_user_centre: centreId }
+  });
+  return !!rel;
+};
 
 /**
- * Controlador de Cursos
- * Maneja las operaciones CRUD de cursos de formación
+ * CURSOS
  */
 
-// @desc    Obtener todos los cursos
-// @route   GET /api/courses
-// @access  Public
+// GET /api/courses  (público, pero si mine=true exige token y role CENTRE/ADMIN)
 exports.getAllCourses = async (req, res) => {
   try {
-    const { name, teacher, type, minPrice, maxPrice } = req.query;
+    const { name, teacher, type, minPrice, maxPrice, mine } = req.query;
 
     const whereClause = {};
-
-    if (name) {
-      whereClause.Name = {
-        [Op.like]: `%${name}%`
-      };
-    }
-
-    if (teacher) {
-      whereClause.Teacher = {
-        [Op.like]: `%${teacher}%`
-      };
-    }
-
-    if (type) {
-      whereClause.Course_type = type;
-    }
+    if (name) whereClause.Name = { [Op.like]: `%${name}%` };
+    if (teacher) whereClause.Teacher = { [Op.like]: `%${teacher}%` };
+    if (type) whereClause.Course_type = type;
 
     if (minPrice || maxPrice) {
       whereClause.Price = {};
@@ -37,104 +43,96 @@ exports.getAllCourses = async (req, res) => {
       if (maxPrice) whereClause.Price[Op.lte] = parseFloat(maxPrice);
     }
 
+    const include = [
+      { model: CourseInvoice, include: [{ model: Invoice }] },
+      { model: Centre, as: "centres", through: { attributes: ["Post_date"] } }
+    ];
+
+    // mine=true => devuelve SOLO los cursos del centro logado
+    if (mine === "true") {
+      if (!req.user) {
+        return res.status(401).json({ success: false, message: "Necesitas iniciar sesión para usar mine=true." });
+      }
+
+      // ADMIN puede usar mine con centreId opcional (por si quieres ampliarlo luego).
+      if (isCentre(req)) {
+        include[1].where = { Id_user_centre: req.user.id };
+        include[1].required = true;
+      } else if (isAdmin(req)) {
+        // admin: si pone mine=true sin más, devolvemos todos (o si quieres, podrías forzar centreId)
+        // Aquí lo dejamos como "todos", porque admin ve todo.
+      } else {
+        return res.status(403).json({ success: false, message: "No tienes permisos para usar mine=true." });
+      }
+    }
+
     const courses = await Course.findAll({
       where: whereClause,
-      include: [{
-        model: CourseInvoice,
-        include: [{
-          model: Invoice
-        }]
-      }],
-      order: [['Course_Date', 'DESC']]
+      include,
+      order: [["Course_Date", "DESC"]]
     });
 
-    res.status(200).json({
-      success: true,
-      count: courses.length,
-      data: courses
-    });
+    return res.status(200).json({ success: true, count: courses.length, data: courses });
   } catch (error) {
-    console.error('Error en getAllCourses:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener cursos',
-      error: error.message
-    });
+    console.error("Error en getAllCourses:", error);
+    return res.status(500).json({ success: false, message: "Error al obtener cursos", error: error.message });
   }
 };
 
-// @desc    Obtener un curso por ID
-// @route   GET /api/courses/:id
-// @access  Public
+// GET /api/courses/:id  (público)
 exports.getCourseById = async (req, res) => {
   try {
     const { id } = req.params;
 
     const course = await Course.findByPk(id, {
       include: [
-        {
-          model: CourseInvoice,
-          include: [{
-            model: Invoice
-          }]
-        },
-        {
-          model: Centre,
-          as: 'centres',
-          through: { attributes: ['Post_date'] }
-        },
-        {
-          model: Therapist,
-          as: 'therapists',
-          through: { attributes: ['Buying_date'] }
-        }
+        { model: CourseInvoice, include: [{ model: Invoice }] },
+        { model: Centre, as: "centres", through: { attributes: ["Post_date"] } },
+        { model: Therapist, as: "therapists", through: { attributes: ["Buying_date"] } }
       ]
     });
 
-    if (!course) {
-      return res.status(404).json({
-        success: false,
-        message: 'Curso no encontrado'
-      });
-    }
+    if (!course) return res.status(404).json({ success: false, message: "Curso no encontrado." });
 
-    res.status(200).json({
-      success: true,
-      data: course
-    });
+    return res.status(200).json({ success: true, data: course });
   } catch (error) {
-    console.error('Error en getCourseById:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener curso',
-      error: error.message
-    });
+    console.error("Error en getCourseById:", error);
+    return res.status(500).json({ success: false, message: "Error al obtener curso", error: error.message });
   }
 };
 
-// @desc    Crear un nuevo curso
-// @route   POST /api/courses
-// @access  Private
+// POST /api/courses  (ADMIN y CENTRE)
+// - Si CENTRE: crea curso + lo asocia automáticamente en POSTS
+// - Si ADMIN: crea curso (y opcionalmente puede asociarlo si envías centreId)
 exports.createCourse = async (req, res) => {
   try {
-    const { Id_course_invoice, Name, Teacher, Price, Course_type, Course_description, Course_Date } = req.body;
+    const {
+      Id_course_invoice,
+      Name,
+      Teacher,
+      Price,
+      Course_type,
+      Course_description,
+      Course_Date,
+      centreId // opcional para ADMIN
+    } = req.body;
 
-    // Validar campos requeridos
     if (!Name) {
-      return res.status(400).json({
-        success: false,
-        message: 'El nombre del curso es requerido'
-      });
+      return res.status(400).json({ success: false, message: "El nombre del curso es requerido." });
     }
 
-    // Si se proporciona Id_course_invoice, verificar que existe
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: "Necesitas iniciar sesión." });
+    }
+
+    if (!isAdmin(req) && !isCentre(req)) {
+      return res.status(403).json({ success: false, message: "No tienes permisos para crear cursos." });
+    }
+
     if (Id_course_invoice) {
       const invoice = await CourseInvoice.findByPk(Id_course_invoice);
       if (!invoice) {
-        return res.status(404).json({
-          success: false,
-          message: 'Factura de curso no encontrada'
-        });
+        return res.status(404).json({ success: false, message: "Factura de curso no encontrada." });
       }
     }
 
@@ -148,98 +146,102 @@ exports.createCourse = async (req, res) => {
       Course_Date
     });
 
-    res.status(201).json({
-      success: true,
-      message: 'Curso creado exitosamente',
-      data: course
-    });
-  } catch (error) {
-    console.error('Error en createCourse:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al crear curso',
-      error: error.message
-    });
-  }
-};
-
-// @desc    Actualizar un curso
-// @route   PUT /api/courses/:id
-// @access  Private
-exports.updateCourse = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { Id_course_invoice, Name, Teacher, Price, Course_type, Course_description, Course_Date } = req.body;
-
-    const course = await Course.findByPk(id);
-
-    if (!course) {
-      return res.status(404).json({
-        success: false,
-        message: 'Curso no encontrado'
+    // Si crea un CENTRE -> asociar a su centro en POSTS
+    if (isCentre(req)) {
+      await Posts.create({
+        Id_user_centre: req.user.id,
+        Id_course: course.Id_course,
+        Post_date: new Date()
       });
     }
 
-    await course.update({
-      Id_course_invoice,
-      Name,
-      Teacher,
-      Price,
-      Course_type,
-      Course_description,
-      Course_Date
-    });
+    // Si crea un ADMIN y envía centreId -> asociar a ese centro (opcional)
+    if (isAdmin(req) && centreId) {
+      const centre = await Centre.findByPk(centreId);
+      if (!centre) {
+        return res.status(404).json({ success: false, message: "Centro no encontrado para asociar el curso." });
+      }
 
-    res.status(200).json({
+      await Posts.create({
+        Id_user_centre: centreId,
+        Id_course: course.Id_course,
+        Post_date: new Date()
+      });
+    }
+
+    return res.status(201).json({
       success: true,
-      message: 'Curso actualizado exitosamente',
+      message: "Curso creado correctamente.",
       data: course
     });
   } catch (error) {
-    console.error('Error en updateCourse:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al actualizar curso',
-      error: error.message
-    });
+    console.error("Error en createCourse:", error);
+    return res.status(500).json({ success: false, message: "Error al crear curso", error: error.message });
   }
 };
 
-// @desc    Eliminar un curso
-// @route   DELETE /api/courses/:id
-// @access  Private
+// PUT /api/courses/:id (ADMIN y CENTRE)
+// - CENTRE solo si el curso es suyo
+exports.updateCourse = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!req.user) return res.status(401).json({ success: false, message: "Necesitas iniciar sesión." });
+
+    const course = await Course.findByPk(id);
+    if (!course) return res.status(404).json({ success: false, message: "Curso no encontrado." });
+
+    if (isCentre(req)) {
+      const ok = await courseBelongsToCentre(id, req.user.id);
+      if (!ok) {
+        return res.status(403).json({ success: false, message: "No puedes modificar un curso que no es de tu centro." });
+      }
+    } else if (!isAdmin(req)) {
+      return res.status(403).json({ success: false, message: "No tienes permisos para modificar cursos." });
+    }
+
+    await course.update(req.body);
+
+    return res.status(200).json({ success: true, message: "Curso actualizado correctamente.", data: course });
+  } catch (error) {
+    console.error("Error en updateCourse:", error);
+    return res.status(500).json({ success: false, message: "Error al actualizar curso", error: error.message });
+  }
+};
+
+// DELETE /api/courses/:id (ADMIN y CENTRE)
+// - CENTRE solo si el curso es suyo
 exports.deleteCourse = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const course = await Course.findByPk(id);
+    if (!req.user) return res.status(401).json({ success: false, message: "Necesitas iniciar sesión." });
 
-    if (!course) {
-      return res.status(404).json({
-        success: false,
-        message: 'Curso no encontrado'
-      });
+    const course = await Course.findByPk(id);
+    if (!course) return res.status(404).json({ success: false, message: "Curso no encontrado." });
+
+    if (isCentre(req)) {
+      const ok = await courseBelongsToCentre(id, req.user.id);
+      if (!ok) {
+        return res.status(403).json({ success: false, message: "No puedes eliminar un curso que no es de tu centro." });
+      }
+
+      // borrar relación posts del centro con ese curso (para limpiar)
+      await Posts.destroy({ where: { Id_user_centre: req.user.id, Id_course: id } });
+    } else if (!isAdmin(req)) {
+      return res.status(403).json({ success: false, message: "No tienes permisos para eliminar cursos." });
     }
 
     await course.destroy();
 
-    res.status(200).json({
-      success: true,
-      message: 'Curso eliminado exitosamente'
-    });
+    return res.status(200).json({ success: true, message: "Curso eliminado correctamente." });
   } catch (error) {
-    console.error('Error en deleteCourse:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al eliminar curso',
-      error: error.message
-    });
+    console.error("Error en deleteCourse:", error);
+    return res.status(500).json({ success: false, message: "Error al eliminar curso", error: error.message });
   }
 };
 
-// @desc    Obtener terapeutas que han comprado un curso
-// @route   GET /api/courses/:id/therapists
-// @access  Private
+// GET /api/courses/:id/therapists (ADMIN y CENTRE)
 exports.getCourseTherapists = async (req, res) => {
   try {
     const { id } = req.params;
@@ -247,40 +249,22 @@ exports.getCourseTherapists = async (req, res) => {
     const course = await Course.findByPk(id, {
       include: [{
         model: Therapist,
-        as: 'therapists',
-        through: { attributes: ['Buying_date'] },
-        include: [{
-          model: require('../sequelize-models').User,
-          attributes: ['email']
-        }]
+        as: "therapists",
+        through: { attributes: ["Buying_date"] },
+        include: [{ model: User, attributes: ["email", "role"] }]
       }]
     });
 
-    if (!course) {
-      return res.status(404).json({
-        success: false,
-        message: 'Curso no encontrado'
-      });
-    }
+    if (!course) return res.status(404).json({ success: false, message: "Curso no encontrado." });
 
-    res.status(200).json({
-      success: true,
-      count: course.therapists.length,
-      data: course.therapists
-    });
+    return res.status(200).json({ success: true, count: course.therapists.length, data: course.therapists });
   } catch (error) {
-    console.error('Error en getCourseTherapists:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener terapeutas del curso',
-      error: error.message
-    });
+    console.error("Error en getCourseTherapists:", error);
+    return res.status(500).json({ success: false, message: "Error al obtener terapeutas del curso", error: error.message });
   }
 };
 
-// @desc    Obtener centros que publican un curso
-// @route   GET /api/courses/:id/centres
-// @access  Public
+// GET /api/courses/:id/centres (público)
 exports.getCourseCentres = async (req, res) => {
   try {
     const { id } = req.params;
@@ -288,40 +272,22 @@ exports.getCourseCentres = async (req, res) => {
     const course = await Course.findByPk(id, {
       include: [{
         model: Centre,
-        as: 'centres',
-        through: { attributes: ['Post_date'] },
-        include: [{
-          model: require('../sequelize-models').User,
-          attributes: ['email']
-        }]
+        as: "centres",
+        through: { attributes: ["Post_date"] },
+        include: [{ model: User, attributes: ["email", "role"] }]
       }]
     });
 
-    if (!course) {
-      return res.status(404).json({
-        success: false,
-        message: 'Curso no encontrado'
-      });
-    }
+    if (!course) return res.status(404).json({ success: false, message: "Curso no encontrado." });
 
-    res.status(200).json({
-      success: true,
-      count: course.centres.length,
-      data: course.centres
-    });
+    return res.status(200).json({ success: true, count: course.centres.length, data: course.centres });
   } catch (error) {
-    console.error('Error en getCourseCentres:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener centros del curso',
-      error: error.message
-    });
+    console.error("Error en getCourseCentres:", error);
+    return res.status(500).json({ success: false, message: "Error al obtener centros del curso", error: error.message });
   }
 };
 
-// @desc    Obtener cursos disponibles (próximos o sin fecha)
-// @route   GET /api/courses/available
-// @access  Public
+// GET /api/courses/available (público)
 exports.getAvailableCourses = async (req, res) => {
   try {
     const today = new Date();
@@ -334,109 +300,66 @@ exports.getAvailableCourses = async (req, res) => {
           { Course_Date: null }
         ]
       },
-      order: [['Course_Date', 'ASC']]
+      order: [["Course_Date", "ASC"]]
     });
 
-    res.status(200).json({
-      success: true,
-      count: courses.length,
-      data: courses
-    });
+    return res.status(200).json({ success: true, count: courses.length, data: courses });
   } catch (error) {
-    console.error('Error en getAvailableCourses:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener cursos disponibles',
-      error: error.message
-    });
+    console.error("Error en getAvailableCourses:", error);
+    return res.status(500).json({ success: false, message: "Error al obtener cursos disponibles", error: error.message });
   }
 };
 
-// @desc    Obtener cursos por tipo
-// @route   GET /api/courses/by-type/:type
-// @access  Public
+// GET /api/courses/by-type/:type (público)
 exports.getCoursesByType = async (req, res) => {
   try {
     const { type } = req.params;
 
     const courses = await Course.findAll({
       where: { Course_type: type },
-      order: [['Course_Date', 'ASC']]
+      order: [["Course_Date", "ASC"]]
     });
 
-    res.status(200).json({
-      success: true,
-      count: courses.length,
-      data: courses
-    });
+    return res.status(200).json({ success: true, count: courses.length, data: courses });
   } catch (error) {
-    console.error('Error en getCoursesByType:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener cursos por tipo',
-      error: error.message
-    });
+    console.error("Error en getCoursesByType:", error);
+    return res.status(500).json({ success: false, message: "Error al obtener cursos por tipo", error: error.message });
   }
 };
 
-// @desc    Obtener cursos por profesor
-// @route   GET /api/courses/by-teacher/:teacher
-// @access  Public
+// GET /api/courses/by-teacher/:teacher (público)
 exports.getCoursesByTeacher = async (req, res) => {
   try {
     const { teacher } = req.params;
 
     const courses = await Course.findAll({
-      where: {
-        Teacher: {
-          [Op.like]: `%${teacher}%`
-        }
-      },
-      order: [['Course_Date', 'DESC']]
+      where: { Teacher: { [Op.like]: `%${teacher}%` } },
+      order: [["Course_Date", "DESC"]]
     });
 
-    res.status(200).json({
-      success: true,
-      count: courses.length,
-      data: courses
-    });
+    return res.status(200).json({ success: true, count: courses.length, data: courses });
   } catch (error) {
-    console.error('Error en getCoursesByTeacher:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener cursos por profesor',
-      error: error.message
-    });
+    console.error("Error en getCoursesByTeacher:", error);
+    return res.status(500).json({ success: false, message: "Error al obtener cursos por profesor", error: error.message });
   }
 };
 
-// @desc    Obtener estadísticas de cursos
-// @route   GET /api/courses/stats
-// @access  Private
+// GET /api/courses/stats (solo ADMIN)
 exports.getCoursesStats = async (req, res) => {
   try {
-    const { sequelize } = require('../sequelize-models');
-
     const stats = await Course.findAll({
       attributes: [
-        'Course_type',
-        [sequelize.fn('COUNT', sequelize.col('Id_course')), 'count'],
-        [sequelize.fn('AVG', sequelize.col('Price')), 'avgPrice'],
-        [sequelize.fn('SUM', sequelize.col('Price')), 'totalRevenue']
+        "Course_type",
+        [db.sequelize.fn("COUNT", db.sequelize.col("Id_course")), "count"],
+        [db.sequelize.fn("AVG", db.sequelize.col("Price")), "avgPrice"],
+        [db.sequelize.fn("SUM", db.sequelize.col("Price")), "totalRevenue"]
       ],
-      group: ['Course_type']
+      group: ["Course_type"]
     });
 
-    res.status(200).json({
-      success: true,
-      data: stats
-    });
+    return res.status(200).json({ success: true, data: stats });
   } catch (error) {
-    console.error('Error en getCoursesStats:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener estadísticas de cursos',
-      error: error.message
-    });
+    console.error("Error en getCoursesStats:", error);
+    return res.status(500).json({ success: false, message: "Error al obtener estadísticas de cursos", error: error.message });
   }
 };

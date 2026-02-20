@@ -257,7 +257,7 @@ exports.updateTreatmentReport = async (req, res) => {
   }
 };
 
-// @desc    Remover paciente de un terapeuta
+// @desc    Eliminar paciente de un terapeuta
 // @route   DELETE /api/therapists/:id/patients/:patientId
 // @access  Private
 exports.removePatientFromTherapist = async (req, res) => {

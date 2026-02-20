@@ -1,41 +1,33 @@
-// routes/courseRoutes.js
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const {
-  getAllCourses,
-  getCourseById,
-  createCourse,
-  updateCourse,
-  deleteCourse,
-  getCourseTherapists,
-  getCourseCentres,
-  getAvailableCourses,
-  getCoursesByType,
-  getCoursesByTeacher,
-  getCoursesStats
-} = require('../controllers/courseController');
 
-// Rutas especiales (deben ir antes de /:id)
-router.get('/available', getAvailableCourses);
-router.get('/stats', getCoursesStats);
-router.get('/by-type/:type', getCoursesByType);
-router.get('/by-teacher/:teacher', getCoursesByTeacher);
+const { verifyToken, requireRole } = require("../middlewares/authJwt");
+const courseController = require("../controllers/courseController");
 
-// Rutas base
-router.route('/')
-  .get(getAllCourses)
-  .post(createCourse);
+// mine=true => exige token
+const authIfMine = (req, res, next) => {
+  if (req.query.mine === "true") return verifyToken(req, res, next);
+  return next();
+};
 
-// Rutas por ID
-router.route('/:id')
-  .get(getCourseById)
-  .put(updateCourse)
-  .delete(deleteCourse);
+// Especiales
+router.get("/available", courseController.getAvailableCourses);
+router.get("/by-type/:type", courseController.getCoursesByType);
+router.get("/by-teacher/:teacher", courseController.getCoursesByTeacher);
 
-// Terapeutas del curso
-router.get('/:id/therapists', getCourseTherapists);
+router.get("/stats", verifyToken, requireRole("ADMIN"), courseController.getCoursesStats);
 
-// Centros del curso
-router.get('/:id/centres', getCourseCentres);
+// Base
+router.get("/", authIfMine, courseController.getAllCourses);
+router.post("/", verifyToken, requireRole("ADMIN", "CENTRE"), courseController.createCourse);
+
+// Por ID
+router.get("/:id", courseController.getCourseById);
+router.put("/:id", verifyToken, requireRole("ADMIN", "CENTRE"), courseController.updateCourse);
+router.delete("/:id", verifyToken, requireRole("ADMIN", "CENTRE"), courseController.deleteCourse);
+
+// Relaciones
+router.get("/:id/therapists", verifyToken, requireRole("ADMIN", "CENTRE"), courseController.getCourseTherapists);
+router.get("/:id/centres", courseController.getCourseCentres);
 
 module.exports = router;
