@@ -1,20 +1,715 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Blank
+<!-- ============================================ -->
+<!-- HEADER CON NAVEGACIÓN -->
+<!-- ============================================ -->
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar color="primary">
+    <!-- Botón menú hamburguesa (móvil) -->
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <!-- Logo centrado -->
+    <ion-title class="ion-text-center">
+      <img src="assets/images/logo-cisne.jpeg" alt="CISNE" class="logo-header">
     </ion-title>
+
+    <!-- Botón de login (móvil) -->
+    <ion-buttons slot="end">
+      <ion-button (click)="scrollToSection('login')">
+        <ion-icon slot="icon-only" name="log-in-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Navegación Desktop -->
+  <ion-toolbar color="light" class="desktop-nav">
+    <div class="nav-container">
+      <ion-button fill="clear" (click)="scrollToSection('inicio')">
+        Inicio
+      </ion-button>
+      <ion-button fill="clear" (click)="scrollToSection('quienes-somos')">
+        Quiénes Somos
+      </ion-button>
+      <ion-button fill="clear" (click)="scrollToSection('servicios')">
+        Servicios
+      </ion-button>
+      <ion-button fill="clear" (click)="scrollToSection('registro')">
+        Registro
+      </ion-button>
+      <ion-button fill="clear" color="primary" (click)="scrollToSection('login')">
+        <ion-icon slot="start" name="log-in-outline"></ion-icon>
+        Iniciar Sesión
+      </ion-button>
+    </div>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
+<!-- ============================================ -->
+<!-- MENÚ LATERAL (MÓVIL) -->
+<!-- ============================================ -->
+<ion-menu side="start" menuId="main-menu" contentId="main-content">
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-title>
+        <img src="assets/images/logo-cisne.jpeg" alt="CISNE" class="logo-menu">
+      </ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
-  </div>
+  <ion-content>
+    <ion-list>
+      <ion-menu-toggle auto-hide="false">
+        <ion-item button (click)="scrollToSection('inicio')" detail="false">
+          <ion-icon slot="start" name="home-outline"></ion-icon>
+          <ion-label>Inicio</ion-label>
+        </ion-item>
+
+        <ion-item button (click)="scrollToSection('quienes-somos')" detail="false">
+          <ion-icon slot="start" name="people-outline"></ion-icon>
+          <ion-label>Quiénes Somos</ion-label>
+        </ion-item>
+
+        <ion-item button (click)="scrollToSection('servicios')" detail="false">
+          <ion-icon slot="start" name="medical-outline"></ion-icon>
+          <ion-label>Servicios</ion-label>
+        </ion-item>
+
+        <ion-item button (click)="scrollToSection('registro')" detail="false">
+          <ion-icon slot="start" name="person-add-outline"></ion-icon>
+          <ion-label>Registro</ion-label>
+        </ion-item>
+
+        <ion-item button (click)="scrollToSection('login')" detail="false">
+          <ion-icon slot="start" name="log-in-outline"></ion-icon>
+          <ion-label>Iniciar Sesión</ion-label>
+        </ion-item>
+      </ion-menu-toggle>
+    </ion-list>
+  </ion-content>
+
+  <ion-footer>
+    <ion-toolbar color="light">
+      <ion-title class="ion-text-center" style="font-size: 12px;">
+        CISNE © 2024
+      </ion-title>
+    </ion-toolbar>
+  </ion-footer>
+</ion-menu>
+
+<!-- ============================================ -->
+<!-- CONTENIDO PRINCIPAL -->
+<!-- ============================================ -->
+<ion-content [fullscreen]="true" id="main-content" [scrollEvents]="true">
+
+  <!-- ============================================ -->
+  <!-- SECCIÓN 1: INICIO / HERO -->
+  <!-- ============================================ -->
+  <section id="inicio" class="hero-section">
+    <div class="hero-overlay">
+      <div class="hero-content">
+        <ion-badge color="secondary" class="hero-badge">
+          ATENCIÓN ESPECIALIZADA
+        </ion-badge>
+
+        <h1 class="hero-title">
+          Recupera tu autonomía con expertos en neurorrehabilitación
+        </h1>
+
+        <p class="hero-subtitle">
+          Tratamientos personalizados con un enfoque multidisciplinario
+          para tu recuperación integral.
+        </p>
+
+        <div class="hero-buttons">
+          <ion-button size="large" color="primary" (click)="scrollToSection('registro')">
+            <ion-icon slot="start" name="calendar-outline"></ion-icon>
+            Solicitar Cita
+          </ion-button>
+
+          <ion-button size="large" fill="outline" color="light" (click)="scrollToSection('servicios')">
+            Ver Servicios
+            <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- SECCIÓN 2: QUIÉNES SOMOS -->
+  <!-- ============================================ -->
+  <section id="quienes-somos" class="section-padding">
+    <div class="container">
+      <div class="section-header">
+        <ion-badge color="primary">SOBRE NOSOTROS</ion-badge>
+        <h2>Centro de Investigación Superior en Neurorrehabilitación</h2>
+        <p class="section-description">
+          Comprometidos con la excelencia en la atención neurorrehabilitadora
+        </p>
+      </div>
+
+      <ion-grid>
+        <ion-row class="ion-align-items-center">
+          <!-- Columna imagen -->
+          <ion-col size="12" size-md="6">
+            <div class="about-image">
+              <img src="assets/images/logo-cisne.jpeg" alt="CISNE Logo">
+            </div>
+          </ion-col>
+
+          <!-- Columna contenido -->
+          <ion-col size="12" size-md="6">
+            <div class="about-content">
+              <h3>Nuestra Misión</h3>
+              <p>
+                En CISNE nos dedicamos a proporcionar servicios de neurorrehabilitación
+                de la más alta calidad, combinando investigación científica avanzada con
+                atención clínica personalizada.
+              </p>
+
+              <h3>Nuestro Enfoque</h3>
+              <p>
+                Trabajamos con un equipo multidisciplinario de profesionales especializados
+                en fisioterapia, terapia ocupacional, neuropsicología y logopedia para
+                ofrecer tratamientos integrales adaptados a cada paciente.
+              </p>
+
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <ion-icon name="people-outline" color="primary"></ion-icon>
+                  <h4>500+</h4>
+                  <p>Pacientes atendidos</p>
+                </div>
+
+                <div class="stat-item">
+                  <ion-icon name="medical-outline" color="secondary"></ion-icon>
+                  <h4>15+</h4>
+                  <p>Años de experiencia</p>
+                </div>
+
+                <div class="stat-item">
+                  <ion-icon name="ribbon-outline" color="tertiary"></ion-icon>
+                  <h4>95%</h4>
+                  <p>Satisfacción</p>
+                </div>
+              </div>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- SECCIÓN 3: SERVICIOS -->
+  <!-- ============================================ -->
+  <section id="servicios" class="section-padding section-gray">
+    <div class="container">
+      <div class="section-header">
+        <ion-badge color="secondary">NUESTROS SERVICIOS</ion-badge>
+        <h2>Especialidades integradas para tu bienestar</h2>
+        <p class="section-description">
+          Ofrecemos un amplio rango de servicios especializados en neurorrehabilitación
+        </p>
+      </div>
+
+      <ion-grid>
+        <ion-row>
+          <!-- Servicio 1: Fisioterapia -->
+          <ion-col size="12" size-md="6" size-lg="3">
+            <ion-card class="service-card" button (click)="showServiceDetails('fisioterapia')">
+              <div class="service-icon" style="background: linear-gradient(135deg, #5B9BD5 0%, #2B4F87 100%);">
+                <ion-icon name="accessibility-outline"></ion-icon>
+              </div>
+              <ion-card-header>
+                <ion-card-title>Fisioterapia</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <p>Recuperación de movilidad y fuerza mediante técnicas especializadas.</p>
+                <ion-button fill="clear" size="small">
+                  Más información
+                  <ion-icon slot="end" name="arrow-forward"></ion-icon>
+                </ion-button>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+
+          <!-- Servicio 2: Terapia Ocupacional -->
+          <ion-col size="12" size-md="6" size-lg="3">
+            <ion-card class="service-card" button (click)="showServiceDetails('terapia-ocupacional')">
+              <div class="service-icon" style="background: linear-gradient(135deg, #D8A7C7 0%, #9B6B8F 100%);">
+                <ion-icon name="hand-left-outline"></ion-icon>
+              </div>
+              <ion-card-header>
+                <ion-card-title>Terapia Ocupacional</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <p>Independencia en actividades diarias y mejora de la calidad de vida.</p>
+                <ion-button fill="clear" size="small">
+                  Más información
+                  <ion-icon slot="end" name="arrow-forward"></ion-icon>
+                </ion-button>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+
+          <!-- Servicio 3: Neuropsicología -->
+          <ion-col size="12" size-md="6" size-lg="3">
+            <ion-card class="service-card" button (click)="showServiceDetails('neuropsicologia')">
+              <div class="service-icon" style="background: linear-gradient(135deg, #FFB347 0%, #FF8C42 100%);">
+                <ion-icon name="bulb-outline"></ion-icon>
+              </div>
+              <ion-card-header>
+                <ion-card-title>Neuropsicología</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <p>Evaluación y rehabilitación de funciones cognitivas.</p>
+                <ion-button fill="clear" size="small">
+                  Más información
+                  <ion-icon slot="end" name="arrow-forward"></ion-icon>
+                </ion-button>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+
+          <!-- Servicio 4: Logopedia -->
+          <ion-col size="12" size-md="6" size-lg="3">
+            <ion-card class="service-card" button (click)="showServiceDetails('logopedia')">
+              <div class="service-icon" style="background: linear-gradient(135deg, #10DC60 0%, #0CAD4B 100%);">
+                <ion-icon name="chatbubbles-outline"></ion-icon>
+              </div>
+              <ion-card-header>
+                <ion-card-title>Logopedia</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <p>Tratamiento de trastornos del habla, lenguaje y deglución.</p>
+                <ion-button fill="clear" size="small">
+                  Más información
+                  <ion-icon slot="end" name="arrow-forward"></ion-icon>
+                </ion-button>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <!-- Botón para ver todos los servicios -->
+      <div class="ion-text-center ion-margin-top">
+        <ion-button size="large" color="primary">
+          Ver todos los servicios
+          <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- SECCIÓN 4: FORMULARIO DE REGISTRO -->
+  <!-- ============================================ -->
+  <section id="registro" class="section-padding">
+    <div class="container">
+      <div class="section-header">
+        <ion-badge color="primary">ÚNETE A CISNE</ion-badge>
+        <h2>Crea tu cuenta</h2>
+        <p class="section-description">
+          Regístrate para acceder a nuestros servicios y gestionar tus citas
+        </p>
+      </div>
+
+      <ion-grid>
+        <ion-row class="ion-justify-content-center">
+          <ion-col size="12" size-md="8" size-lg="6">
+            <ion-card class="form-card">
+              <ion-card-content>
+                <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+
+                  <!-- Tipo de usuario -->
+                  <ion-list class="form-list">
+                    <ion-list-header>
+                      <ion-label>Tipo de cuenta</ion-label>
+                    </ion-list-header>
+
+                    <ion-radio-group formControlName="userType">
+                      <ion-item lines="none">
+                        <ion-radio slot="start" value="patient"></ion-radio>
+                        <ion-label>
+                          <h3>Paciente</h3>
+                          <p>Para solicitar citas y acceder a tratamientos</p>
+                        </ion-label>
+                      </ion-item>
+
+                      <ion-item lines="none">
+                        <ion-radio slot="start" value="therapist"></ion-radio>
+                        <ion-label>
+                          <h3>Terapeuta</h3>
+                          <p>Profesional de la salud</p>
+                        </ion-label>
+                      </ion-item>
+
+                      <ion-item lines="none">
+                        <ion-radio slot="start" value="centre"></ion-radio>
+                        <ion-label>
+                          <h3>Centro</h3>
+                          <p>Institución o centro médico</p>
+                        </ion-label>
+                      </ion-item>
+                    </ion-radio-group>
+                  </ion-list>
+
+                  <!-- Email -->
+                  <ion-item class="form-item">
+                    <ion-label position="stacked">
+                      <ion-icon name="mail-outline"></ion-icon>
+                      Correo Electrónico *
+                    </ion-label>
+                    <ion-input type="email" formControlName="email" placeholder="tu@email.com">
+                    </ion-input>
+                  </ion-item>
+                  <div class="error-message"
+                    *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+                    <ion-text color="danger">
+                      <small>Por favor ingresa un email válido</small>
+                    </ion-text>
+                  </div>
+
+                  <!-- Nombre completo -->
+                  <ion-item class="form-item">
+                    <ion-label position="stacked">
+                      <ion-icon name="person-outline"></ion-icon>
+                      Nombre Completo *
+                    </ion-label>
+                    <ion-input type="text" formControlName="fullName" placeholder="Juan Pérez">
+                    </ion-input>
+                  </ion-item>
+
+                  <!-- NIF/CIF (según tipo de usuario) -->
+                  <ion-item class="form-item" *ngIf="registerForm.get('userType')?.value !== 'centre'">
+                    <ion-label position="stacked">
+                      <ion-icon name="card-outline"></ion-icon>
+                      NIF *
+                    </ion-label>
+                    <ion-input type="text" formControlName="nif" placeholder="12345678A">
+                    </ion-input>
+                  </ion-item>
+
+                  <ion-item class="form-item" *ngIf="registerForm.get('userType')?.value === 'centre'">
+                    <ion-label position="stacked">
+                      <ion-icon name="business-outline"></ion-icon>
+                      CIF *
+                    </ion-label>
+                    <ion-input type="text" formControlName="cif" placeholder="B12345678">
+                    </ion-input>
+                  </ion-item>
+
+                  <!-- Teléfono -->
+                  <ion-item class="form-item">
+                    <ion-label position="stacked">
+                      <ion-icon name="call-outline"></ion-icon>
+                      Teléfono
+                    </ion-label>
+                    <ion-input type="tel" formControlName="phone" placeholder="+34 600 000 000">
+                    </ion-input>
+                  </ion-item>
+
+                  <!-- Campos específicos para Terapeuta -->
+                  <div *ngIf="registerForm.get('userType')?.value === 'therapist'">
+                    <ion-item class="form-item">
+                      <ion-label position="stacked">
+                        <ion-icon name="school-outline"></ion-icon>
+                        Número de Colegiado
+                      </ion-label>
+                      <ion-input type="text" formControlName="societyId" placeholder="COL12345">
+                      </ion-input>
+                    </ion-item>
+
+                    <ion-item class="form-item">
+                      <ion-label position="stacked">
+                        <ion-icon name="medical-outline"></ion-icon>
+                        Profesión
+                      </ion-label>
+                      <ion-select formControlName="profession" placeholder="Selecciona">
+                        <ion-select-option value="fisioterapeuta">Fisioterapeuta</ion-select-option>
+                        <ion-select-option value="terapeuta-ocupacional">Terapeuta Ocupacional</ion-select-option>
+                        <ion-select-option value="neuropsicologo">Neuropsicólogo/a</ion-select-option>
+                        <ion-select-option value="logopeda">Logopeda</ion-select-option>
+                        <ion-select-option value="otro">Otro</ion-select-option>
+                      </ion-select>
+                    </ion-item>
+                  </div>
+
+                  <!-- Campos específicos para Paciente -->
+                  <div *ngIf="registerForm.get('userType')?.value === 'patient'">
+                    <ion-item class="form-item">
+                      <ion-label position="stacked">
+                        <ion-icon name="fitness-outline"></ion-icon>
+                        Diagnóstico (opcional)
+                      </ion-label>
+                      <ion-textarea formControlName="diagnosis" rows="3" placeholder="Describe brevemente tu condición">
+                      </ion-textarea>
+                    </ion-item>
+                  </div>
+
+                  <!-- Campos específicos para Centro -->
+                  <div *ngIf="registerForm.get('userType')?.value === 'centre'">
+                    <ion-item class="form-item">
+                      <ion-label position="stacked">
+                        <ion-icon name="location-outline"></ion-icon>
+                        Dirección *
+                      </ion-label>
+                      <ion-textarea formControlName="location" rows="2"
+                        placeholder="Calle, número, ciudad, código postal">
+                      </ion-textarea>
+                    </ion-item>
+                  </div>
+
+                  <!-- Contraseña -->
+                  <ion-item class="form-item">
+                    <ion-label position="stacked">
+                      <ion-icon name="lock-closed-outline"></ion-icon>
+                      Contraseña *
+                    </ion-label>
+                    <ion-input [type]="showPassword ? 'text' : 'password'" formControlName="password"
+                      placeholder="Mínimo 6 caracteres">
+                    </ion-input>
+                    <ion-button slot="end" fill="clear" (click)="showPassword = !showPassword">
+                      <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'">
+                      </ion-icon>
+                    </ion-button>
+                  </ion-item>
+
+                  <!-- Confirmar contraseña -->
+                  <ion-item class="form-item">
+                    <ion-label position="stacked">
+                      <ion-icon name="lock-closed-outline"></ion-icon>
+                      Confirmar Contraseña *
+                    </ion-label>
+                    <ion-input [type]="showPassword ? 'text' : 'password'" formControlName="confirmPassword"
+                      placeholder="Repite la contraseña">
+                    </ion-input>
+                  </ion-item>
+                  <div class="error-message"
+                    *ngIf="registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched">
+                    <ion-text color="danger">
+                      <small>Las contraseñas no coinciden</small>
+                    </ion-text>
+                  </div>
+
+                  <!-- Términos y condiciones -->
+                  <ion-item lines="none" class="checkbox-item">
+                    <ion-checkbox slot="start" formControlName="acceptTerms"></ion-checkbox>
+                    <ion-label class="ion-text-wrap">
+                      Acepto los
+                      <a href="#" (click)="showTerms($event)">términos y condiciones</a>
+                      y la
+                      <a href="#" (click)="showPrivacy($event)">política de privacidad</a>
+                    </ion-label>
+                  </ion-item>
+
+                  <!-- Botón de registro -->
+                  <ion-button expand="block" type="submit" size="large" class="submit-button"
+                    [disabled]="registerForm.invalid">
+                    <ion-icon slot="start" name="person-add-outline"></ion-icon>
+                    Crear Cuenta
+                  </ion-button>
+
+                  <!-- Link a login -->
+                  <div class="form-footer">
+                    <p>
+                      ¿Ya tienes cuenta?
+                      <a (click)="scrollToSection('login')">Inicia sesión</a>
+                    </p>
+                  </div>
+                </form>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- SECCIÓN 5: INICIO DE SESIÓN -->
+  <!-- ============================================ -->
+  <section id="login" class="section-padding section-gray">
+    <div class="container">
+      <div class="section-header">
+        <ion-badge color="secondary">ACCESO</ion-badge>
+        <h2>Inicia Sesión</h2>
+        <p class="section-description">
+          Accede a tu cuenta para gestionar tus citas y tratamientos
+        </p>
+      </div>
+
+      <ion-grid>
+        <ion-row class="ion-justify-content-center">
+          <ion-col size="12" size-md="6" size-lg="4">
+            <ion-card class="form-card">
+              <ion-card-content>
+                <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+
+                  <!-- Email -->
+                  <ion-item class="form-item">
+                    <ion-label position="stacked">
+                      <ion-icon name="mail-outline"></ion-icon>
+                      Correo Electrónico
+                    </ion-label>
+                    <ion-input type="email" formControlName="email" placeholder="tu@email.com">
+                    </ion-input>
+                  </ion-item>
+
+                  <!-- Contraseña -->
+                  <ion-item class="form-item">
+                    <ion-label position="stacked">
+                      <ion-icon name="lock-closed-outline"></ion-icon>
+                      Contraseña
+                    </ion-label>
+                    <ion-input [type]="showLoginPassword ? 'text' : 'password'" formControlName="password"
+                      placeholder="Tu contraseña">
+                    </ion-input>
+                    <ion-button slot="end" fill="clear" (click)="showLoginPassword = !showLoginPassword">
+                      <ion-icon [name]="showLoginPassword ? 'eye-off-outline' : 'eye-outline'">
+                      </ion-icon>
+                    </ion-button>
+                  </ion-item>
+
+                  <!-- Recordar sesión -->
+                  <ion-item lines="none" class="checkbox-item">
+                    <ion-checkbox slot="start" formControlName="rememberMe"></ion-checkbox>
+                    <ion-label>Recordar mi sesión</ion-label>
+                  </ion-item>
+
+                  <!-- Botón de login -->
+                  <ion-button expand="block" type="submit" size="large" class="submit-button"
+                    [disabled]="loginForm.invalid">
+                    <ion-icon slot="start" name="log-in-outline"></ion-icon>
+                    Iniciar Sesión
+                  </ion-button>
+
+                  <!-- Link de contraseña olvidada -->
+                  <div class="form-footer ion-text-center">
+                    <a (click)="forgotPassword()">¿Olvidaste tu contraseña?</a>
+                  </div>
+
+                  <!-- Divider -->
+                  <div class="divider">
+                    <span>o</span>
+                  </div>
+
+                  <!-- Registro rápido -->
+                  <ion-button expand="block" fill="outline" size="large" (click)="scrollToSection('registro')">
+                    <ion-icon slot="start" name="person-add-outline"></ion-icon>
+                    Crear Nueva Cuenta
+                  </ion-button>
+                </form>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- FOOTER -->
+  <!-- ============================================ -->
+  <ion-footer class="landing-footer">
+    <div class="container">
+      <ion-grid>
+        <ion-row>
+          <!-- Columna 1: Logo y descripción -->
+          <ion-col size="12" size-md="4">
+            <img src="assets/images/logo-cisne.jpeg" alt="CISNE" class="footer-logo">
+            <p class="footer-description">
+              Centro de Investigación Superior en Neurorrehabilitación
+            </p>
+            <div class="social-links">
+              <ion-button fill="clear" size="small">
+                <ion-icon name="logo-facebook"></ion-icon>
+              </ion-button>
+              <ion-button fill="clear" size="small">
+                <ion-icon name="logo-instagram"></ion-icon>
+              </ion-button>
+              <ion-button fill="clear" size="small">
+                <ion-icon name="logo-twitter"></ion-icon>
+              </ion-button>
+              <ion-button fill="clear" size="small">
+                <ion-icon name="logo-linkedin"></ion-icon>
+              </ion-button>
+            </div>
+          </ion-col>
+
+          <!-- Columna 2: Enlaces -->
+          <ion-col size="12" size-md="4">
+            <h3 class="footer-title">Enlaces Rápidos</h3>
+            <ion-list class="footer-links">
+              <ion-item lines="none" button (click)="scrollToSection('inicio')">
+                <ion-label>Inicio</ion-label>
+              </ion-item>
+              <ion-item lines="none" button (click)="scrollToSection('quienes-somos')">
+                <ion-label>Quiénes Somos</ion-label>
+              </ion-item>
+              <ion-item lines="none" button (click)="scrollToSection('servicios')">
+                <ion-label>Servicios</ion-label>
+              </ion-item>
+              <ion-item lines="none" button (click)="scrollToSection('registro')">
+                <ion-label>Registro</ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-col>
+
+          <!-- Columna 3: Contacto -->
+          <ion-col size="12" size-md="4">
+            <h3 class="footer-title">Contacto</h3>
+            <ion-list class="footer-contact">
+              <ion-item lines="none">
+                <ion-icon slot="start" name="location-outline"></ion-icon>
+                <ion-label class="ion-text-wrap">
+                  Avenida Principal 17,<br>
+                  Arucas, España
+                </ion-label>
+              </ion-item>
+              <ion-item lines="none">
+                <ion-icon slot="start" name="call-outline"></ion-icon>
+                <ion-label>+34 928 000 000</ion-label>
+              </ion-item>
+              <ion-item lines="none">
+                <ion-icon slot="start" name="mail-outline"></ion-icon>
+                <ion-label>info@cisne.com</ion-label>
+              </ion-item>
+              <ion-item lines="none">
+                <ion-icon slot="start" name="time-outline"></ion-icon>
+                <ion-label>Lun - Vie: 8:00 - 20:00</ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-col>
+        </ion-row>
+
+        <!-- Copyright -->
+        <ion-row>
+          <ion-col size="12">
+            <div class="footer-bottom">
+              <p>&copy; 2024 CISNE - Centro de Investigación Superior en Neurorrehabilitación. Todos los derechos
+                reservados.</p>
+              <div class="footer-legal">
+                <a href="#">Términos y Condiciones</a> |
+                <a href="#">Política de Privacidad</a> |
+                <a href="#">Aviso Legal</a>
+              </div>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+  </ion-footer>
+
 </ion-content>
+
+<!-- ============================================ -->
+<!-- BOTÓN FLOTANTE: VOLVER ARRIBA -->
+<!-- ============================================ -->
+<ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="showScrollTop">
+  <ion-fab-button (click)="scrollToTop()" color="primary">
+    <ion-icon name="arrow-up-outline"></ion-icon>
+  </ion-fab-button>
+</ion-fab>
