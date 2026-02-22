@@ -120,43 +120,79 @@ ion-header {
 
 // ==================== MENÚ LATERAL ====================
 ion-menu {
-  --width: 280px;
-
-  ion-content {
-    --background: #f9fafb;
+  --background: #ffffff;
+  
+  ion-header {
+    ion-toolbar[color="primary"] {
+      --background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    }
   }
 
   .logo-menu {
-    height: 38px;
+    height: 40px;
     width: auto;
     object-fit: contain;
-    display: block;
+  }
+
+  ion-content {
+    --background: #ffffff;
+  }
+
+  ion-list {
+    background: transparent;
+    padding: 16px 0;
   }
 
   ion-item {
     --background: transparent;
-    margin: 6px 10px;
-    border-radius: 12px;
-    transition: transform 0.15s ease;
+    --color: #1f2937;
+    --padding-start: 20px;
+    --padding-end: 20px;
+    --min-height: 48px;
+    margin: 4px 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
 
     &:hover {
-      --background: rgba(27, 105, 231, 0.1);
-      transform: translateY(-1px);
+      --background: rgba(59, 130, 246, 0.08);
     }
 
     ion-icon {
-      color: $primary-color;
+      color: #3b82f6;  // ← Color azul de los botones del toolbar
+      margin-right: 16px;
       font-size: 22px;
-      margin-right: 12px;
     }
 
     ion-label {
-      color: $bg-white;
-      font-weight: 700;
+      color: #1e3a8a;  // ← Color azul consistente con el tema
+      font-weight: 500;
+      font-size: 15px;
+    }
+
+    // Estado activo
+    &.item-selected {
+      --background: rgba(59, 130, 246, 0.15);
+      
+      ion-label {
+        color: #1e3a8a;
+        font-weight: 600;
+      }
+
+      ion-icon {
+        color: #1e3a8a;
+      }
+    }
+  }
+
+  ion-footer {
+    ion-toolbar {
+      --background: #f9fafb;
+      --color: #6b7280;
+      text-align: center;
+      font-size: 12px;
     }
   }
 }
-
 // ==================== HERO ====================
 .hero-section {
   position: relative;
