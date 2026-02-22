@@ -68,11 +68,8 @@ module.exports = (sequelize, Sequelize) => {
     },
     CIF: { type: DataTypes.STRING(20), allowNull: false, unique: true },
     name: { type: DataTypes.STRING(100), allowNull: false},
-    location: { type: DataTypes.STRING(255) },
-    Id_service: {
-      type: DataTypes.INTEGER,
-      references: { model: 'SERVICE', key: 'Id_service' }
-    }
+    phone: { type: DataTypes.STRING(30), allowNull: true },
+    location: { type: DataTypes.STRING(255), allowNull: false },
   }, { tableName: 'CENTRE', timestamps: false });
 
   const Therapist = sequelize.define('Therapist', {
@@ -84,6 +81,7 @@ module.exports = (sequelize, Sequelize) => {
     firstname: { type: DataTypes.STRING(100), allowNull: false },
     lastname: { type: DataTypes.STRING(150), allowNull: false },
     NIF: { type: DataTypes.STRING(20), allowNull: false, unique: true },
+    phone: { type: DataTypes.STRING(30), allowNull: true },
     Society_Id: { type: DataTypes.STRING(50) },
     Profession: { type: DataTypes.STRING(100) }
   }, { tableName: 'THERAPIST', timestamps: false });
@@ -97,6 +95,7 @@ module.exports = (sequelize, Sequelize) => {
     firstname: { type: DataTypes.STRING(100), allowNull: false },
     lastname: { type: DataTypes.STRING(150), allowNull: false },
     NIF: { type: DataTypes.STRING(20), allowNull: false, unique: true },
+    phone: { type: DataTypes.STRING(30), allowNull: true },
     diagnosis: { type: DataTypes.STRING(255) }
   }, { tableName: 'PATIENT', timestamps: false });
 

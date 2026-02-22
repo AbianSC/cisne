@@ -372,13 +372,22 @@
                     </ion-text>
                   </div>
 
-                  <!-- Nombre completo -->
-                  <ion-item class="form-item">
+                  <!-- Nombre completo / Nombre centro -->
+                  <ion-item class="form-item" *ngIf="registerForm.get('userType')?.value !== 'centre'">
                     <ion-label position="stacked">
                       <ion-icon name="person-outline"></ion-icon>
                       Nombre Completo *
                     </ion-label>
                     <ion-input type="text" formControlName="fullName" placeholder="Juan Pérez">
+                    </ion-input>
+                  </ion-item>
+
+                  <ion-item class="form-item" *ngIf="registerForm.get('userType')?.value === 'centre'">
+                    <ion-label position="stacked">
+                      <ion-icon name="business-outline"></ion-icon>
+                      Nombre *
+                    </ion-label>
+                    <ion-input type="text" formControlName="cif" placeholder="Nombre centro">
                     </ion-input>
                   </ion-item>
 
@@ -416,7 +425,7 @@
                     <ion-item class="form-item">
                       <ion-label position="stacked">
                         <ion-icon name="school-outline"></ion-icon>
-                        Número de Colegiado
+                        Número de Colegiado *
                       </ion-label>
                       <ion-input type="text" formControlName="societyId" placeholder="COL12345">
                       </ion-input>

@@ -7,9 +7,19 @@ const { verifyToken } = require("../middlewares/authJwt");
 router.post(
   "/register",
   [
-    body("email").isEmail(),
-    body("password").isLength({ min: 6 }),
-    body("role").optional().isIn(["ADMIN", "CENTRE", "THERAPIST", "PATIENT"])
+    body("email").isEmail().withMessage("Email inválido"),
+    body("password").isLength({ min: 6 }).withMessage("Password mínimo 6 caracteres"),
+    body("role").optional().isIn(["CENTRE", "THERAPIST", "PATIENT"]).withMessage("Rol inválido"),
+
+    // Si quieres validar también acceptTerms:
+    body("acceptTerms").equals("true").withMessage("Debes aceptar términos"),
+
+    // Campos condicionales (no obligatorio para todos, pero validamos si vienen)
+    body("fullName").optional().isString().isLength({ min: 2 }),
+    body("nif").optional().isString().isLength({ min: 6 }),
+    body("cif").optional().isString().isLength({ min: 6 }),
+    body("name").optional().isString().isLength({ min: 2 }),
+    body("location").optional().isString().isLength({ min: 5 })
   ],
   auth.register
 );
@@ -17,8 +27,8 @@ router.post(
 router.post(
   "/login",
   [
-    body("email").isEmail(),
-    body("password").notEmpty()
+    body("email").isEmail().withMessage("Email inválido"),
+    body("password").notEmpty().withMessage("Password requerido")
   ],
   auth.login
 );
