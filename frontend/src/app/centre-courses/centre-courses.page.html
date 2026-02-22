@@ -1,0 +1,102 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard" text="Volver"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Mis cursos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="startCreate()">
+        <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+        Nuevo
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <ion-refresher slot="fixed" (ionRefresh)="loadMine($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- FORM -->
+  <ion-card class="form-card">
+    <ion-card-header>
+      <ion-card-title>{{ editingId ? 'Editar curso' : 'Crear curso' }}</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+
+        <ion-item class="form-item">
+          <ion-label position="stacked">Nombre *</ion-label>
+          <ion-input formControlName="Name" placeholder="Ej. Rehabilitación neurológica"></ion-input>
+        </ion-item>
+
+        <ion-item class="form-item">
+          <ion-label position="stacked">Profesor</ion-label>
+          <ion-input formControlName="Teacher" placeholder="Ej. Dra. Pérez"></ion-input>
+        </ion-item>
+
+        <ion-item class="form-item">
+          <ion-label position="stacked">Tipo</ion-label>
+          <ion-input formControlName="Course_type" placeholder="Ej. Fisioterapia"></ion-input>
+        </ion-item>
+
+        <ion-item class="form-item">
+          <ion-label position="stacked">Precio (opcional)</ion-label>
+          <ion-input type="number" formControlName="Price" placeholder="0"></ion-input>
+        </ion-item>
+
+        <ion-item class="form-item">
+          <ion-label position="stacked">Fecha (opcional)</ion-label>
+          <ion-input type="date" formControlName="Course_Date"></ion-input>
+        </ion-item>
+
+        <ion-item class="form-item">
+          <ion-label position="stacked">Descripción</ion-label>
+          <ion-textarea rows="3" formControlName="Course_description" placeholder="Detalles del curso..."></ion-textarea>
+        </ion-item>
+
+        <ion-button expand="block" type="submit" [disabled]="form.invalid">
+          <ion-icon slot="start" [name]="editingId ? 'save-outline' : 'add-outline'"></ion-icon>
+          {{ editingId ? 'Guardar cambios' : 'Crear curso' }}
+        </ion-button>
+      </form>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- LISTADO -->
+  <ion-card class="list-card">
+    <ion-card-header>
+      <ion-card-title>Listado</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-item lines="none" *ngIf="cursos.length === 0">
+        <ion-label>No tienes cursos todavía.</ion-label>
+      </ion-item>
+
+      <ion-list *ngIf="cursos.length > 0">
+        <ion-item *ngFor="let c of cursos">
+          <ion-label class="ion-text-wrap">
+            <h2>{{ c.Name }}</h2>
+            <p *ngIf="c.Course_type"><strong>Tipo:</strong> {{ c.Course_type }}</p>
+            <p *ngIf="c.Teacher"><strong>Profesor:</strong> {{ c.Teacher }}</p>
+            <p *ngIf="c.Course_Date"><strong>Fecha:</strong> {{ c.Course_Date }}</p>
+          </ion-label>
+
+          <ion-buttons slot="end">
+            <ion-button fill="clear" (click)="startEdit(c)">
+              <ion-icon name="create-outline"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" color="danger" (click)="confirmDelete(c)">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>

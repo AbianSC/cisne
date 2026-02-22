@@ -21,6 +21,11 @@ router.get("/stats", verifyToken, requireRole("ADMIN"), courseController.getCour
 router.get("/", authIfMine, courseController.getAllCourses);
 router.post("/", verifyToken, requireRole("ADMIN", "CENTRE"), courseController.createCourse);
 
+// THERAPIST
+router.get("/available-for-me", verifyToken, requireRole("THERAPIST"), courseController.getAvailableCoursesForMe);
+router.get("/my-courses", verifyToken, requireRole("THERAPIST"), courseController.getMyCourses);
+router.post("/:id/acquire", verifyToken, requireRole("THERAPIST"), courseController.acquireCourse);
+
 // Por ID
 router.get("/:id", courseController.getCourseById);
 router.put("/:id", verifyToken, requireRole("ADMIN", "CENTRE"), courseController.updateCourse);

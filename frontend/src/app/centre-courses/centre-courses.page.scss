@@ -1,0 +1,84 @@
+/* Mantener look tipo home: tarjetas oscuras */
+:host {
+  --card-bg: rgba(25, 25, 25, 0.92);
+  --field-bg: rgba(255, 255, 255, 0.08);
+  --field-border: rgba(255, 255, 255, 0.10);
+  --text: #ffffff;
+  --muted: rgba(255, 255, 255, 0.75);
+}
+
+.form-card,
+.list-card {
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--card-bg);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+ion-card-title,
+ion-card-subtitle,
+ion-label,
+ion-text,
+h2,
+p {
+  color: var(--text) !important;
+}
+
+/* Items del formulario */
+.form-item {
+  --background: transparent; /* evita el gris claro que te mata el contraste */
+  --padding-start: 0px;
+  --inner-padding-end: 0px;
+  margin-bottom: 12px;
+}
+
+/* Caja “input” bonita y legible */
+.form-item ion-input,
+.form-item ion-textarea {
+  --background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  color: var(--text) !important;
+}
+
+/* Label arriba (stacked) más visible */
+.form-item ion-label {
+  color: var(--muted) !important;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* Placeholder visible */
+.form-item ion-input::part(native),
+.form-item ion-textarea::part(native) {
+  color: var(--text);
+}
+
+.form-item ion-input::part(placeholder),
+.form-item ion-textarea::part(placeholder) {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Botón principal */
+ion-button[type="submit"] {
+  margin-top: 12px;
+  border-radius: 14px;
+}
+
+/* Listado */
+ion-list {
+  background: transparent;
+}
+
+ion-item {
+  --background: transparent;
+}
+
+ion-item h2 {
+  font-weight: 700;
+}
+
+ion-item p {
+  color: rgba(255, 255, 255, 0.75) !important;
+}

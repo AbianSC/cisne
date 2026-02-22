@@ -8,12 +8,16 @@ const Centre = db.Centre;
 const Therapist = db.Therapist;
 const User = db.User;
 
+const Employs = db.Employs;
+const Buys = db.Buys;
+
 const Posts = db.Posts; // tabla puente Centre-Course
 
 const Op = db.Sequelize.Op;
 
 const isAdmin = (req) => req.user?.role === "ADMIN";
 const isCentre = (req) => req.user?.role === "CENTRE";
+const isTherapist = (req) => req.user?.role === "THERAPIST";
 
 // Comprueba si un curso pertenece al centro logado (existe en POSTS)
 const courseBelongsToCentre = async (courseId, centreId) => {
@@ -343,6 +347,134 @@ exports.getCoursesByTeacher = async (req, res) => {
     return res.status(500).json({ success: false, message: "Error al obtener cursos por profesor", error: error.message });
   }
 };
+// GET /api/courses/available-for-me  (solo THERAPIST)
+exports.getAvailableCoursesForMe = async (req, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ success: false, message: "Necesitas iniciar sesión." });
+    if (!isTherapist(req)) return res.status(403).json({ success: false, message: "Solo terapeutas." });
+
+    // 1) Centros donde está empleado
+    const employs = await Employs.findAll({
+      where: { Id_user_therapist: req.user.id },
+      attributes: ["Id_user_centre"]
+    });
+
+    const centreIds = employs.map(e => e.Id_user_centre);
+    if (centreIds.length === 0) {
+      return res.status(200).json({ success: true, count: 0, data: [] });
+    }
+
+    // 2) Cursos publicados por esos centros (POSTS)
+    // Incluimos centres para traer info del centro si quieres mostrarla
+    const courses = await Course.findAll({
+      include: [
+        {
+          model: Centre,
+          as: "centres",
+          where: { Id_user_centre: { [Op.in]: centreIds } },
+          through: { attributes: ["Post_date"] },
+          required: true
+        },
+        // 3) Excluir los ya adquiridos por este terapeuta
+        {
+          model: Therapist,
+          as: "therapists",
+          where: { Id_user_therapist: req.user.id },
+          through: { attributes: [] },
+          required: false
+        }
+      ],
+      order: [["Course_Date", "ASC"]]
+    });
+
+    // Filtramos en memoria para quedarnos con los NO comprados (porque el include therapists required:false)
+    const available = courses.filter(c => !c.therapists || c.therapists.length === 0);
+
+    return res.status(200).json({ success: true, count: available.length, data: available });
+  } catch (error) {
+    console.error("Error en getAvailableCoursesForMe:", error);
+    return res.status(500).json({ success: false, message: "Error al obtener cursos disponibles", error: error.message });
+  }
+};
+
+// GET /api/courses/my-courses  (solo THERAPIST)
+exports.getMyCourses = async (req, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ success: false, message: "Necesitas iniciar sesión." });
+    if (!isTherapist(req)) return res.status(403).json({ success: false, message: "Solo terapeutas." });
+
+    const courses = await Course.findAll({
+      include: [
+        {
+          model: Therapist,
+          as: "therapists",
+          where: { Id_user_therapist: req.user.id },
+          through: { attributes: ["Buying_date"] },
+          required: true
+        },
+        { model: Centre, as: "centres", through: { attributes: ["Post_date"] }, required: false }
+      ],
+      order: [["Course_Date", "ASC"]]
+    });
+
+    return res.status(200).json({ success: true, count: courses.length, data: courses });
+  } catch (error) {
+    console.error("Error en getMyCourses:", error);
+    return res.status(500).json({ success: false, message: "Error al obtener mis cursos", error: error.message });
+  }
+};
+
+// POST /api/courses/:id/acquire  (solo THERAPIST)
+exports.acquireCourse = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!req.user) return res.status(401).json({ success: false, message: "Necesitas iniciar sesión." });
+    if (!isTherapist(req)) return res.status(403).json({ success: false, message: "Solo terapeutas." });
+
+    const course = await Course.findByPk(id, {
+      include: [{ model: Centre, as: "centres", through: { attributes: [] } }]
+    });
+    if (!course) return res.status(404).json({ success: false, message: "Curso no encontrado." });
+
+    // 1) El curso debe estar publicado por al menos un centro
+    const courseCentreIds = (course.centres || []).map(c => c.Id_user_centre);
+    if (courseCentreIds.length === 0) {
+      return res.status(400).json({ success: false, message: "Este curso no está asignado a ningún centro." });
+    }
+
+    // 2) El terapeuta debe estar empleado en (al menos) uno de esos centros
+    const employed = await Employs.findOne({
+      where: {
+        Id_user_therapist: req.user.id,
+        Id_user_centre: { [Op.in]: courseCentreIds }
+      }
+    });
+
+    if (!employed) {
+      return res.status(403).json({ success: false, message: "No puedes adquirir cursos de un centro donde no trabajas." });
+    }
+
+    // 3) No duplicar compra
+    const existing = await Buys.findOne({
+      where: { Id_user_therapist: req.user.id, Id_course: id }
+    });
+    if (existing) {
+      return res.status(409).json({ success: false, message: "Ya has adquirido este curso." });
+    }
+
+    await Buys.create({
+      Id_user_therapist: req.user.id,
+      Id_course: id,
+      Buying_date: new Date()
+    });
+
+    return res.status(201).json({ success: true, message: "Curso adquirido correctamente." });
+  } catch (error) {
+    console.error("Error en acquireCourse:", error);
+    return res.status(500).json({ success: false, message: "Error al adquirir curso", error: error.message });
+  }
+};
 
 // GET /api/courses/stats (solo ADMIN)
 exports.getCoursesStats = async (req, res) => {
@@ -362,4 +494,5 @@ exports.getCoursesStats = async (req, res) => {
     console.error("Error en getCoursesStats:", error);
     return res.status(500).json({ success: false, message: "Error al obtener estadísticas de cursos", error: error.message });
   }
+
 };
