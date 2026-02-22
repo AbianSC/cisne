@@ -1,0 +1,191 @@
+$primary-color: #1e3a8a;
+$secondary-color: #3b82f6;
+$accent-color: #8b5cf6;
+
+$text-blue: #5d8dd1;
+$text-light: #6b7280;
+$text-dark: #080808;
+
+$bg-light: #f9fafb;
+$bg-white: #0a0909;
+
+$shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.08);
+$shadow-md: 0 10px 40px rgba(0, 0, 0, 0.10);
+
+// ---------- Helpers (igual que Home) ----------
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+
+.section-padding {
+  padding: 64px 20px;
+
+  @media (max-width: 768px) {
+    padding: 44px 16px;
+  }
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 34px;
+
+  ion-badge {
+    margin-bottom: 10px;
+  }
+
+  h2 {
+    font-size: 32px;
+    font-weight: 900;
+    color: $text-blue;
+    margin: 8px 0 10px;
+
+    @media (max-width: 768px) {
+      font-size: 24px;
+    }
+  }
+
+  .section-description {
+    color: $text-light;
+    margin: 0 auto;
+    max-width: 780px;
+    line-height: 1.6;
+    font-size: 16px;
+  }
+}
+
+// ---------- Header ----------
+.dash-toolbar {
+  --background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  --color: white;
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+}
+
+.dash-title {
+  font-weight: 900;
+  letter-spacing: 0.4px;
+}
+
+.logout-btn {
+  --color: white;
+  font-weight: 800;
+}
+
+// ---------- Hero ----------
+.dash-hero {
+  position: relative;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #8b5cf6 100%);
+  color: white;
+  min-height: 34vh;
+  display: flex;
+  align-items: center;
+  padding: 72px 20px 52px;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    min-height: 40vh;
+    padding: 64px 16px 42px;
+  }
+}
+
+.dash-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.12) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+.dash-hero-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.hero-badge {
+  letter-spacing: 0.8px;
+  font-weight: 900;
+  padding: 8px 12px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.hero-title {
+  font-size: clamp(26px, 4vw, 52px);
+  font-weight: 900;
+  line-height: 1.15;
+  margin: 10px 0 10px;
+  text-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.hero-highlight {
+  display: inline-block;
+  margin-left: 10px;
+  opacity: 0.95;
+}
+
+.hero-subtitle {
+  font-size: 16px;
+  opacity: 0.92;
+  margin: 0;
+}
+
+// ---------- Cards ----------
+.dash-card {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: $shadow-sm;
+  background: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.14);
+  }
+}
+
+.dash-card-icon {
+  padding: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, $primary-color 0%, $secondary-color 70%);
+
+  ion-icon {
+    font-size: 30px;
+    color: white;
+  }
+}
+
+ion-card-header {
+  padding: 14px 16px 6px;
+}
+
+ion-card-title {
+  font-size: 18px;
+  font-weight: 900;
+  color: $text-dark;
+}
+
+ion-card-content {
+  padding: 0 16px 16px;
+
+  p {
+    color: $text-light;
+    line-height: 1.6;
+    margin-top: 6px;
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  ion-button {
+    --color: #{$secondary-color};
+    font-weight: 900;
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+}

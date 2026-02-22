@@ -199,14 +199,14 @@ export class HomePage {
     }
 
     if (role === 'CENTRE') {
-      payload.name = v.name; 
+      payload.name = v.name;
       payload.cif = v.cif;
       payload.location = v.location;
     }
 
     this.auth.register(payload).subscribe({
       next: async () => {
-        await this.router.navigateByUrl('/dashboard');
+        await this.router.navigateByUrl('/dashboard', { replaceUrl: true });
       },
       error: async (err) => {
         const msg =
@@ -234,7 +234,7 @@ export class HomePage {
 
     this.auth.login({ email: (v.email || '').trim().toLowerCase(), password: v.password }).subscribe({
       next: async () => {
-        await this.router.navigateByUrl('/dashboard');
+        await this.router.navigateByUrl('/dashboard', { replaceUrl: true });
       },
       error: async (err) => {
         const msg = err?.error?.message || 'Credenciales incorrectas';

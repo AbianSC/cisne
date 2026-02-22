@@ -1,8 +1,11 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>Dashboard</ion-title>
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary" class="dash-toolbar">
+    <ion-title class="ion-text-center">
+      <span class="dash-title">Panel de control</span>
+    </ion-title>
+
     <ion-buttons slot="end">
-      <ion-button (click)="logout()">
+      <ion-button fill="clear" class="logout-btn" (click)="logout()">
         <ion-icon slot="start" name="log-out-outline"></ion-icon>
         Salir
       </ion-button>
@@ -10,8 +13,53 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <h2>Sesión iniciada ✅</h2>
-  <p>Usuario actual:</p>
-  <pre>{{ user | json }}</pre>
+<ion-content [fullscreen]="true">
+  <!-- HERO -->
+  <section class="dash-hero">
+    <div class="dash-hero-overlay"></div>
+
+    <div class="dash-hero-content">
+      <ion-badge color="secondary" class="hero-badge">SESIÓN ACTIVA</ion-badge>
+
+      <h1 class="hero-title">
+        Bienvenido/a,
+        <span class="hero-highlight">{{ user?.email }}</span>
+      </h1>
+
+    </div>
+  </section>
+
+  <!-- CONTENIDO -->
+  <section class="section-padding">
+    <div class="container">
+      <div class="section-header">
+        <ion-badge color="primary">RESUMEN</ion-badge>
+        <h2>Tu espacio de trabajo</h2>
+      </div>
+
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="6" size-lg="3" *ngFor="let tarjeta of tarjetas">
+            <ion-card class="dash-card" button (click)="irA(tarjeta)">
+              <div class="dash-card-icon">
+                <ion-icon [name]="tarjeta.icono"></ion-icon>
+              </div>
+
+              <ion-card-header>
+                <ion-card-title>{{ tarjeta.titulo }}</ion-card-title>
+              </ion-card-header>
+
+              <ion-card-content>
+                <p>{{ tarjeta.descripcion }}</p>
+                <ion-button fill="clear" size="small">
+                  Abrir
+                  <ion-icon slot="end" name="arrow-forward"></ion-icon>
+                </ion-button>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+  </section>
 </ion-content>
