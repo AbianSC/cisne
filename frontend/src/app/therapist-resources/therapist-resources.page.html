@@ -1,0 +1,128 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary" class="dash-toolbar">
+    <ion-buttons slot="start">
+      <ion-button fill="clear" (click)="volver()">
+        <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+        Volver
+      </ion-button>
+    </ion-buttons>
+
+    <ion-title class="ion-text-center">
+      <span class="dash-title">Mis recursos</span>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- HERO -->
+  <section class="dash-hero hero-small">
+    <div class="dash-hero-overlay"></div>
+    <div class="dash-hero-content">
+      <ion-badge color="secondary" class="hero-badge">PUBLICACIONES</ion-badge>
+      <h1 class="hero-title">
+        Gestiona tus recursos
+      </h1>
+      <p class="hero-subtitle">Crea, edita o elimina contenido para pacientes.</p>
+    </div>
+  </section>
+
+  <!-- CONTENIDO -->
+  <section class="section-padding">
+    <div class="container">
+
+      <!-- FORM -->
+      <ion-card class="dash-card form-card">
+        <ion-card-header>
+          <ion-card-title>
+            {{ editingId ? 'Editar recurso' : 'Nuevo recurso' }}
+          </ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+          <ion-grid>
+            <ion-row>
+              <ion-col size="12" size-md="6">
+                <ion-item lines="none" class="dash-item">
+                  <ion-label position="stacked">Nombre *</ion-label>
+                  <ion-input [(ngModel)]="form.Name" placeholder="Ej. Guía de estiramientos"></ion-input>
+                </ion-item>
+              </ion-col>
+
+              <ion-col size="12" size-md="6">
+                <ion-item lines="none" class="dash-item">
+                  <ion-label position="stacked">Tipo</ion-label>
+                  <ion-input [(ngModel)]="form.Resource_type" placeholder="Ej. PDF, Vídeo, Artículo"></ion-input>
+                </ion-item>
+              </ion-col>
+
+              <ion-col size="12">
+                <ion-item lines="none" class="dash-item">
+                  <ion-label position="stacked">Descripción</ion-label>
+                  <ion-textarea
+                    [(ngModel)]="form.Resource_description"
+                    placeholder="Describe el contenido..."
+                    autoGrow="true"
+                  ></ion-textarea>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+
+          <div class="form-actions">
+            <ion-button expand="block" class="primary-btn" (click)="submit()" [disabled]="!form.Name || loading">
+              <ion-icon slot="start" [name]="editingId ? 'save-outline' : 'cloud-upload-outline'"></ion-icon>
+              {{ editingId ? 'Guardar cambios' : 'Publicar' }}
+            </ion-button>
+
+            <ion-button expand="block" fill="clear" class="secondary-btn" *ngIf="editingId" (click)="resetForm()">
+              Cancelar edición
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- LISTA -->
+      <div class="section-header compact">
+        <ion-badge color="primary">LISTADO</ion-badge>
+        <h2>Tus recursos</h2>
+      </div>
+
+      <ion-card class="empty-card" *ngIf="!loading && resources.length === 0">
+        <ion-card-content>
+          <p>No tienes recursos todavía.</p>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-grid *ngIf="resources.length > 0">
+        <ion-row>
+          <ion-col size="12" size-md="6" *ngFor="let r of resources">
+            <ion-card class="dash-card resource-card">
+              <ion-card-header>
+                <ion-card-title>{{ r.Name }}</ion-card-title>
+                <ion-card-subtitle *ngIf="r.Resource_type">{{ r.Resource_type }}</ion-card-subtitle>
+              </ion-card-header>
+
+              <ion-card-content>
+                <p class="desc" *ngIf="r.Resource_description">{{ r.Resource_description }}</p>
+                <p class="desc muted" *ngIf="!r.Resource_description">Sin descripción</p>
+
+                <div class="card-actions">
+                  <ion-button fill="clear" size="small" (click)="edit(r)">
+                    <ion-icon slot="start" name="create-outline"></ion-icon>
+                    Editar
+                  </ion-button>
+
+                  <ion-button fill="clear" size="small" color="danger" (click)="confirmDelete(r)">
+                    <ion-icon slot="start" name="trash-outline"></ion-icon>
+                    Eliminar
+                  </ion-button>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+    </div>
+  </section>
+</ion-content>

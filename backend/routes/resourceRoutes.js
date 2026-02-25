@@ -23,30 +23,42 @@ const {
   getPatientFeed
 } = require('../controllers/resourceController');
 
-// ✅ NUEVAS (antes de /:id)
+// ======================
+// RUTAS "FIJAS" 
+// ======================
+
+// Nuevas
 router.get('/mine', verifyToken, requireRole("THERAPIST"), getMyResources);
 router.get('/feed', verifyToken, requireRole("PATIENT"), getPatientFeed);
 
-// Rutas especiales (deben ir antes de /:id)
+// Especiales
 router.get('/search', searchResources);
 router.get('/popular', getPopularResources);
-router.get('/stats', verifyToken, requireRole("ADMIN"), getResourcesStats); // stats mejor solo admin
+router.get('/stats', verifyToken, requireRole("ADMIN"), getResourcesStats);
+
+// Filtros
 router.get('/by-type/:type', getResourcesByType);
 router.get('/by-therapist/:therapistId', getResourcesByTherapist);
 
-// Rutas base
+// ======================
+// BASE
+// ======================
 router.route('/')
   .get(getAllResources)
-  .post(verifyToken, requireRole("ADMIN", "THERAPIST"), createResource); // ✅ privado
+  .post(verifyToken, requireRole("ADMIN", "THERAPIST"), createResource);
 
-// Rutas por ID
-router.route('/:id')
-  .get(getResourceById)
-  .put(verifyToken, requireRole("ADMIN", "THERAPIST"), updateResource)   // ✅ privado
-  .delete(verifyToken, requireRole("ADMIN", "THERAPIST"), deleteResource); // ✅ privado
+// ======================
+// RUTAS POR ID
+// ======================
 
-// Consumidores y publicadores
+// Sub-recursos (más específicas que /:id)
 router.get('/:id/consumers', verifyToken, requireRole("ADMIN", "THERAPIST"), getResourceConsumers);
 router.get('/:id/publishers', getResourcePublishers);
+
+// Recurso por ID
+router.route('/:id')
+  .get(getResourceById)
+  .put(verifyToken, requireRole("ADMIN", "THERAPIST"), updateResource)
+  .delete(verifyToken, requireRole("ADMIN", "THERAPIST"), deleteResource);
 
 module.exports = router;

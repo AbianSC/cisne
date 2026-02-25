@@ -66,7 +66,7 @@ export class DashboardPage implements OnInit, OnDestroy {
         return [
           { titulo: 'Agenda', descripcion: 'Revisa tu calendario y disponibilidad.', icono: 'time-outline' },
           { titulo: 'Pacientes', descripcion: 'Accede a pacientes asignados y notas.', icono: 'people-outline' },
-          { titulo: 'Informes', descripcion: 'Crea y gestiona informes clínicos.', icono: 'document-text-outline' },
+          { titulo: 'Recursos', descripcion: 'Publica y gestiona recursos para pacientes.', icono: 'book-outline', ruta: '/therapist/resources'  },
           { titulo: 'Cursos', descripcion: 'Consulta cursos adquiridos y aprendizaje.', icono: 'school-outline', ruta: '/therapist/courses' },
         ];
 

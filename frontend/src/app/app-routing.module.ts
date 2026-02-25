@@ -37,6 +37,12 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
 
+  {
+    path: 'therapist/resources',
+    loadChildren: () => import('./therapist-resources/therapist-resources.module').then(m => m.TherapistResourcesPageModule),
+    canActivate: [AuthGuard]
+  },
+
 ];
 
 @NgModule({
