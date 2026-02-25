@@ -1,4 +1,4 @@
-// routes/therapistRoutes.js
+const { verifyToken, requireRole } = require("../middlewares/authJwt");
 const express = require('express');
 const router = express.Router();
 const {
@@ -15,13 +15,20 @@ const {
   buyCourse,
   getTherapistResources,
   publishResource,
-  getTherapistStats
+  getTherapistStats,
+  getMyPatients,
+  assignPatientToMe
 } = require('../controllers/therapistController');
 
 // Rutas base
 router.route('/')
   .get(getAllTherapists)
   .post(createTherapist);
+
+// ✅ THERAPIST (rutas cómodas para el frontend)
+
+router.get('/me/patients', verifyToken, requireRole("THERAPIST"), getMyPatients);
+router.post('/me/patients', verifyToken, requireRole("THERAPIST"), assignPatientToMe);
 
 // Rutas por ID
 router.route('/:id')

@@ -196,7 +196,6 @@ exports.getTherapistPatients = async (req, res) => {
 
 // @desc    Agregar paciente a un terapeuta (iniciar tratamiento)
 // @route   POST /api/therapists/:id/patients
-// @access  Private
 exports.addPatientToTherapist = async (req, res) => {
   try {
     const { id } = req.params;
@@ -389,7 +388,9 @@ exports.getTherapistStats = async (req, res) => {
       ]
     });
 
-    if (!therapist) return res.status(404).json({ success: false, message: "Terapeuta no encontrado" });
+    if (!therapist) {
+      return res.status(404).json({ success: false, message: "Terapeuta no encontrado" });
+    }
 
     const stats = {
       total_pacientes: therapist.patients?.length || 0,
@@ -399,10 +400,76 @@ exports.getTherapistStats = async (req, res) => {
       profesion: therapist.Profession
     };
 
-    res.status(200).json({ success: true, data: stats });
+    return res.status(200).json({ success: true, data: stats });
   } catch (error) {
     console.error("Error en getTherapistStats:", error);
-    res.status(500).json({ success: false, message: "Error al obtener estadísticas", error: error.message });
+    return res.status(500).json({
+      success: false,
+      message: "Error al obtener estadísticas",
+      error: error.message
+    });
   }
 };
+
+// ✅ RUTAS "ME" (rápidas para frontend)
+
+// GET /api/therapists/me/patients
+exports.getMyPatients = async (req, res) => {
+  try {
+    // authJwt deja req.user = { id, email, role }
+    const therapistId = req.user.id;
+
+    const rows = await Treats.findAll({
+      where: { Id_user_therapist: therapistId },
+    });
+
+    return res.status(200).json({ success: true, count: rows.length, data: rows });
+  } catch (error) {
+    console.error("getMyPatients:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error al obtener pacientes.",
+      error: error.message
+    });
+  }
+};
+
+// POST /api/therapists/me/patients
+exports.assignPatientToMe = async (req, res) => {
+  try {
+    const therapistId = req.user.id;
+    const { Id_user_patient, report } = req.body;
+
+    if (!Id_user_patient) {
+      return res.status(400).json({ success: false, message: "Id_user_patient es requerido" });
+    }
+
+    const existing = await Treats.findOne({
+      where: { Id_user_therapist: therapistId, Id_user_patient }
+    });
+
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: "El paciente ya está asignado a este terapeuta."
+      });
+    }
+
+    await Treats.create({
+      Id_user_therapist: therapistId,
+      Id_user_patient,
+      report: report || "Tratamiento iniciado"
+    });
+
+    return res.status(201).json({ success: true, message: "Paciente asignado al terapeuta." });
+  } catch (error) {
+    console.error("assignPatientToMe:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error al asignar paciente.",
+      error: error.message
+    });
+  }
+};
+
 

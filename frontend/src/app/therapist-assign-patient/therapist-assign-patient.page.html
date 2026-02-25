@@ -1,0 +1,61 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button fill="clear" (click)="volver()">
+        <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+        Volver
+      </ion-button>
+    </ion-buttons>
+
+    <ion-title class="ion-text-center">Asignar paciente</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+
+  <ion-card class="dash-card">
+    <ion-card-header>
+      <ion-card-title>Asignación rápida</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-item>
+        <ion-label position="stacked">ID del paciente</ion-label>
+        <ion-input type="number" [(ngModel)]="patientId" placeholder="Ej: 12"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Nota (opcional)</ion-label>
+        <ion-textarea [(ngModel)]="report" rows="3" placeholder="Seguimiento inicial..."></ion-textarea>
+      </ion-item>
+
+      <ion-button expand="block" class="submit-button" [disabled]="!patientId || loading" (click)="asignar()">
+        <ion-icon slot="start" name="person-add-outline"></ion-icon>
+        {{ loading ? 'Asignando...' : 'Asignar a mi lista' }}
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="dash-card">
+    <ion-card-header>
+      <ion-card-title>Mis pacientes</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-list *ngIf="asignaciones.length; else empty">
+        <ion-item *ngFor="let a of asignaciones">
+          <ion-icon slot="start" name="people-outline"></ion-icon>
+          <ion-label>
+            <h3>Paciente ID: {{ a.Id_user_patient }}</h3>
+            <p *ngIf="a.report">Nota: {{ a.report }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+
+      <ng-template #empty>
+        <ion-text color="medium">Aún no tienes pacientes asignados.</ion-text>
+      </ng-template>
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>

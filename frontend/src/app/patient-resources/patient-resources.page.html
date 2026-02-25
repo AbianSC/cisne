@@ -1,0 +1,44 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button fill="clear" (click)="volver()">
+        <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+        Volver
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Recursos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-card class="dash-card">
+    <ion-card-header>
+      <ion-card-title>Recomendados para ti</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>Publicaciones de tus terapeutas.</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-progress-bar *ngIf="loading" type="indeterminate"></ion-progress-bar>
+
+  <ion-card class="dash-card" *ngFor="let r of feed">
+    <ion-card-header>
+      <ion-card-title>{{ r.Name }}</ion-card-title>
+      <ion-note *ngIf="r.Resource_type">{{ r.Resource_type }}</ion-note>
+    </ion-card-header>
+
+    <ion-card-content>
+      <p>{{ r.Resource_description || 'Sin descripción.' }}</p>
+
+      <ion-chip *ngIf="r.publishers?.length">
+        <ion-icon name="person-outline"></ion-icon>
+        <ion-label>{{ r.publishers[0]?.User?.email || 'Terapeuta' }}</ion-label>
+      </ion-chip>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="dash-card" *ngIf="!loading && feed.length === 0">
+    <ion-card-content>No tienes recursos todavía.</ion-card-content>
+  </ion-card>
+</ion-content>

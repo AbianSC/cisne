@@ -58,14 +58,14 @@ export class DashboardPage implements OnInit, OnDestroy {
         return [
           { titulo: 'Mis citas', descripcion: 'Gestiona tus próximas citas y solicitudes.', icono: 'calendar-outline' },
           { titulo: 'Mis tratamientos', descripcion: 'Sigue tu progreso y planes asignados.', icono: 'fitness-outline' },
-          { titulo: 'Recursos', descripcion: 'Material recomendado para tu recuperación.', icono: 'book-outline' },
+          { titulo: 'Recursos', descripcion: 'Material recomendado para tu recuperación.', icono: 'book-outline', ruta: '/patient/resources' },
           { titulo: 'Mi perfil', descripcion: 'Actualiza tus datos personales.', icono: 'person-outline' },
         ];
 
       case 'THERAPIST':
         return [
           { titulo: 'Agenda', descripcion: 'Revisa tu calendario y disponibilidad.', icono: 'time-outline' },
-          { titulo: 'Pacientes', descripcion: 'Accede a pacientes asignados y notas.', icono: 'people-outline' },
+          { titulo: 'Pacientes', descripcion: 'Accede a pacientes asignados y notas.', icono: 'people-outline', ruta: '/therapist/assign-patient' },
           { titulo: 'Recursos', descripcion: 'Publica y gestiona recursos para pacientes.', icono: 'book-outline', ruta: '/therapist/resources'  },
           { titulo: 'Cursos', descripcion: 'Consulta cursos adquiridos y aprendizaje.', icono: 'school-outline', ruta: '/therapist/courses' },
         ];
