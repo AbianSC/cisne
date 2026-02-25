@@ -73,7 +73,7 @@ export class DashboardPage implements OnInit, OnDestroy {
       case 'CENTRE':
         return [
           { titulo: 'Mis cursos', descripcion: 'Crea y gestiona los cursos de tu centro.', icono: 'library-outline', ruta: '/centre/courses' },
-          { titulo: 'Terapeutas', descripcion: 'Gestiona terapeutas y contratos.', icono: 'people-circle-outline' },
+          { titulo: 'Terapeutas', descripcion: 'Gestiona terapeutas y contratos.', icono: 'people-circle-outline', ruta: '/centre/therapists' },
           { titulo: 'Estadísticas', descripcion: 'Resumen de actividad y rendimiento.', icono: 'stats-chart-outline' },
           { titulo: 'Perfil del centro', descripcion: 'Actualiza datos del centro y contacto.', icono: 'business-outline' },
         ];

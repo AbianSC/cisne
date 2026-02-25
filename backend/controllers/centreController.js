@@ -1,3 +1,4 @@
+// controllers/centreController.js
 const db = require("../models");
 const Centre = db.Centre;
 const User = db.User;
@@ -8,14 +9,29 @@ const Service = db.Service;
 
 const Op = db.Sequelize.Op;
 
+const isAdmin = (req) => req.user?.role === "ADMIN";
+const isCentre = (req) => req.user?.role === "CENTRE";
+
+// CENTRE solo puede operar sobre su propio id (req.user.id)
+function assertCentreOwnership(req, centreId) {
+  if (isAdmin(req)) return; // admin puede todo
+  if (!isCentre(req)) {
+    const err = new Error("No tienes permisos.");
+    err.statusCode = 403;
+    throw err;
+  }
+  if (Number(req.user.id) !== Number(centreId)) {
+    const err = new Error("No puedes gestionar un centro que no es el tuyo.");
+    err.statusCode = 403;
+    throw err;
+  }
+}
+
 /**
  * Controlador de Centros
- * CRUD y relaciones (terapeutas y cursos)
  */
 
-// @desc    Obtener todos los centros
-// @route   GET /api/centres
-// @access  Public
+// GET /api/centres (public)
 exports.getAllCentres = async (req, res) => {
   try {
     const centres = await Centre.findAll({
@@ -32,9 +48,7 @@ exports.getAllCentres = async (req, res) => {
   }
 };
 
-// @desc    Obtener un centro por ID
-// @route   GET /api/centres/:id
-// @access  Public
+// GET /api/centres/:id (public)
 exports.getCentreById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -55,9 +69,7 @@ exports.getCentreById = async (req, res) => {
   }
 };
 
-// @desc    Crear un centro
-// @route   POST /api/centres
-// @access  Private
+// POST /api/centres (ADMIN)
 exports.createCentre = async (req, res) => {
   try {
     const { Id_user_centre, CIF, name, location, Id_service } = req.body;
@@ -77,7 +89,6 @@ exports.createCentre = async (req, res) => {
       return res.status(409).json({ success: false, message: "Este usuario ya está registrado como centro" });
     }
 
-    // Si mandas Id_service, comprobamos que exista
     if (Id_service) {
       const service = await Service.findByPk(Id_service);
       if (!service) return res.status(404).json({ success: false, message: "Servicio no encontrado" });
@@ -92,13 +103,14 @@ exports.createCentre = async (req, res) => {
   }
 };
 
-// @desc    Actualizar un centro
-// @route   PUT /api/centres/:id
-// @access  Private
+// PUT /api/centres/:id (ADMIN o el propio CENTRE)
 exports.updateCentre = async (req, res) => {
   try {
     const { id } = req.params;
-    const { CIF, location, Id_service } = req.body;
+    assertCentreOwnership(req, id);
+
+    // ✅ FIX: faltaba "name"
+    const { CIF, name, location, Id_service } = req.body;
 
     const centre = await Centre.findByPk(id);
     if (!centre) return res.status(404).json({ success: false, message: "Centro no encontrado" });
@@ -123,13 +135,11 @@ exports.updateCentre = async (req, res) => {
     res.status(200).json({ success: true, message: "Centro actualizado exitosamente", data: centre });
   } catch (error) {
     console.error("Error en updateCentre:", error);
-    res.status(500).json({ success: false, message: "Error al actualizar centro", error: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message || "Error al actualizar centro" });
   }
 };
 
-// @desc    Eliminar un centro
-// @route   DELETE /api/centres/:id
-// @access  Private
+// DELETE /api/centres/:id (ADMIN)
 exports.deleteCentre = async (req, res) => {
   try {
     const { id } = req.params;
@@ -146,9 +156,7 @@ exports.deleteCentre = async (req, res) => {
   }
 };
 
-// @desc    Obtener terapeutas de un centro
-// @route   GET /api/centres/:id/therapists
-// @access  Public
+// GET /api/centres/:id/therapists (public)
 exports.getCentreTherapists = async (req, res) => {
   try {
     const { id } = req.params;
@@ -171,12 +179,12 @@ exports.getCentreTherapists = async (req, res) => {
   }
 };
 
-// @desc    Agregar terapeuta a un centro
-// @route   POST /api/centres/:id/therapists
-// @access  Private
+// POST /api/centres/:id/therapists (ADMIN o el propio CENTRE)
 exports.addTherapistToCentre = async (req, res) => {
   try {
     const { id } = req.params;
+    assertCentreOwnership(req, id);
+
     const { Id_user_therapist, Contract } = req.body;
 
     if (!Id_user_therapist) {
@@ -202,16 +210,15 @@ exports.addTherapistToCentre = async (req, res) => {
     res.status(201).json({ success: true, message: "Terapeuta agregado al centro exitosamente" });
   } catch (error) {
     console.error("Error en addTherapistToCentre:", error);
-    res.status(500).json({ success: false, message: "Error al agregar terapeuta al centro", error: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message || "Error al agregar terapeuta" });
   }
 };
 
-// @desc    Remover terapeuta de un centro
-// @route   DELETE /api/centres/:id/therapists/:therapistId
-// @access  Private
+// DELETE /api/centres/:id/therapists/:therapistId (ADMIN o el propio CENTRE)
 exports.removeTherapistFromCentre = async (req, res) => {
   try {
     const { id, therapistId } = req.params;
+    assertCentreOwnership(req, id);
 
     const centre = await Centre.findByPk(id);
     if (!centre) return res.status(404).json({ success: false, message: "Centro no encontrado" });
@@ -224,13 +231,11 @@ exports.removeTherapistFromCentre = async (req, res) => {
     res.status(200).json({ success: true, message: "Terapeuta removido del centro exitosamente" });
   } catch (error) {
     console.error("Error en removeTherapistFromCentre:", error);
-    res.status(500).json({ success: false, message: "Error al remover terapeuta del centro", error: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message || "Error al remover terapeuta" });
   }
 };
 
-// @desc    Obtener cursos publicados por un centro
-// @route   GET /api/centres/:id/courses
-// @access  Public
+// GET /api/centres/:id/courses (public)
 exports.getCentreCourses = async (req, res) => {
   try {
     const { id } = req.params;
@@ -248,12 +253,12 @@ exports.getCentreCourses = async (req, res) => {
   }
 };
 
-// @desc    Publicar un curso en un centro
-// @route   POST /api/centres/:id/courses
-// @access  Private
+// POST /api/centres/:id/courses (ADMIN o el propio CENTRE)
 exports.postCourse = async (req, res) => {
   try {
     const { id } = req.params;
+    assertCentreOwnership(req, id);
+
     const { Id_course, Post_date } = req.body;
 
     if (!Id_course) return res.status(400).json({ success: false, message: "Id_course es requerido" });
@@ -269,13 +274,11 @@ exports.postCourse = async (req, res) => {
     res.status(201).json({ success: true, message: "Curso publicado exitosamente" });
   } catch (error) {
     console.error("Error en postCourse:", error);
-    res.status(500).json({ success: false, message: "Error al publicar curso", error: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message || "Error al publicar curso" });
   }
 };
 
-// @desc    Buscar centros por ubicación o CIF
-// @route   GET /api/centres/search?location=xxx&CIF=yyy
-// @access  Public
+// GET /api/centres/search (public)
 exports.searchCentres = async (req, res) => {
   try {
     const { location, CIF } = req.query;
@@ -294,4 +297,33 @@ exports.searchCentres = async (req, res) => {
     console.error("Error en searchCentres:", error);
     res.status(500).json({ success: false, message: "Error al buscar centros", error: error.message });
   }
+};
+
+// ======================
+// NUEVOS /me (comodidad)
+// ======================
+exports.getMyCentreTherapists = (req, res) => {
+  // El centre logado es req.user.id
+  req.params.id = req.user.id;
+  return exports.getCentreTherapists(req, res);
+};
+
+exports.addTherapistToMyCentre = (req, res) => {
+  req.params.id = req.user.id;
+  return exports.addTherapistToCentre(req, res);
+};
+
+exports.removeTherapistFromMyCentre = (req, res) => {
+  req.params.id = req.user.id;
+  return exports.removeTherapistFromCentre(req, res);
+};
+
+exports.getMyCentreCourses = (req, res) => {
+  req.params.id = req.user.id;
+  return exports.getCentreCourses(req, res);
+};
+
+exports.postCourseToMyCentre = (req, res) => {
+  req.params.id = req.user.id;
+  return exports.postCourse(req, res);
 };

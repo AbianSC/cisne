@@ -1,0 +1,66 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button fill="clear" (click)="volver()">
+        <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+        Volver
+      </ion-button>
+    </ion-buttons>
+
+    <ion-title>Terapeutas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Agregar terapeuta al centro</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <form [formGroup]="form" (ngSubmit)="agregar()">
+        <ion-item>
+          <ion-label position="stacked">ID del terapeuta *</ion-label>
+          <ion-input type="number" formControlName="Id_user_therapist" placeholder="Ej: 12"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Contrato</ion-label>
+          <ion-input type="text" formControlName="Contract" placeholder="Ej: Jornada completa"></ion-input>
+        </ion-item>
+
+        <ion-button expand="block" type="submit" [disabled]="form.invalid">
+          <ion-icon slot="start" name="person-add-outline"></ion-icon>
+          Agregar
+        </ion-button>
+      </form>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-refresher slot="fixed" (ionRefresh)="cargar($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Terapeutas empleados</ion-label>
+    </ion-list-header>
+
+    <ion-item *ngFor="let t of terapeutas">
+      <ion-label>
+        <h2>{{ t.firstname }} {{ t.lastname }}</h2>
+        <p>Email: {{ t.User?.email || '-' }}</p>
+        <p>NIF: {{ t.NIF }} | Tel: {{ t.phone || '-' }}</p>
+        <p>Contrato: {{ t.Employs?.Contract || 'No especificado' }}</p>
+      </ion-label>
+
+      <ion-button fill="clear" color="danger" (click)="eliminar(t)">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+
+    <ion-item *ngIf="!loading && terapeutas.length === 0">
+      <ion-label>No hay terapeutas todavía.</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

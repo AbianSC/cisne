@@ -24,6 +24,12 @@ const routes: Routes = [
     loadChildren: () => import('./centre-courses/centre-courses.module').then(m => m.CentreCoursesPageModule),
     canActivate: [AuthGuard],
   },
+
+  {
+    path: 'centre/therapists',
+    loadChildren: () => import('./centre-therapists/centre-therapists.module').then(m => m.CentreTherapistsPageModule),
+    canActivate: [AuthGuard],
+  },
 ];
 
 @NgModule({
