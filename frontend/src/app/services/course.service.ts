@@ -15,7 +15,7 @@ export interface Course {
 export class CourseService {
   private API_URL = 'http://localhost:8080/api/courses';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Mis cursos del centro: mine=true
   getMine() {
@@ -33,5 +33,17 @@ export class CourseService {
 
   delete(id: number) {
     return this.http.delete<{ success: boolean; message?: string }>(`${this.API_URL}/${id}`);
+  }
+
+  getAvailableForMe() {
+    return this.http.get<any>('http://localhost:8080/api/courses/available-for-me');
+  }
+
+  getMyCourses() {
+    return this.http.get<any>('http://localhost:8080/api/courses/my-courses');
+  }
+
+  acquireCourse(courseId: number) {
+    return this.http.post<any>(`http://localhost:8080/api/courses/${courseId}/acquire`, {});
   }
 }

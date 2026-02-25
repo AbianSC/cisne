@@ -30,6 +30,13 @@ const routes: Routes = [
     loadChildren: () => import('./centre-therapists/centre-therapists.module').then(m => m.CentreTherapistsPageModule),
     canActivate: [AuthGuard],
   },
+
+  {
+    path: 'therapist/courses',
+    loadChildren: () => import('./therapist-courses/therapist-courses.module').then(m => m.TherapistCoursesPageModule),
+    canActivate: [AuthGuard],
+  },
+
 ];
 
 @NgModule({

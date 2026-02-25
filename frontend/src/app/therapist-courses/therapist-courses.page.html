@@ -1,0 +1,134 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary" class="dash-toolbar">
+    <ion-buttons slot="start">
+      <ion-button fill="clear" (click)="volver()">
+        <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+        Volver
+      </ion-button>
+    </ion-buttons>
+
+    <ion-title class="ion-text-center">
+      <span class="dash-title">Cursos</span>
+    </ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="cargar()">
+        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- HERO (mismo estilo visual que dashboard) -->
+  <section class="dash-hero">
+    <div class="dash-hero-overlay"></div>
+    <div class="dash-hero-content">
+      <ion-badge color="secondary" class="hero-badge">FORMACIÓN</ion-badge>
+
+      <h1 class="hero-title">
+        Cursos para ti
+      </h1>
+
+      <p class="hero-subtitle">
+        Revisa los cursos disponibles de tu centro y los que ya has adquirido.
+      </p>
+    </div>
+  </section>
+
+  <section class="section-padding">
+    <div class="container">
+
+      <ion-segment [(ngModel)]="segment" value="disponibles" class="seg">
+        <ion-segment-button value="disponibles">
+          <ion-label>Disponibles</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="mios">
+          <ion-label>Mis cursos</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+
+      <!-- DISPONIBLES -->
+      <div *ngIf="segment === 'disponibles'">
+        <ion-card class="panel-card">
+          <ion-card-header>
+            <ion-card-title>Disponibles para adquirir</ion-card-title>
+          </ion-card-header>
+
+          <ion-card-content>
+            <div *ngIf="disponibles.length === 0" class="empty">
+              No hay cursos disponibles ahora mismo.
+            </div>
+
+            <ion-grid *ngIf="disponibles.length > 0">
+              <ion-row>
+                <ion-col size="12" size-md="6" size-lg="4" *ngFor="let c of disponibles">
+                  <ion-card class="course-card">
+                    <ion-card-header>
+                      <ion-card-title>{{ c.Name }}</ion-card-title>
+                      <ion-card-subtitle>
+                        <span *ngIf="c.Teacher">Profesor: {{ c.Teacher }}</span>
+                        <span *ngIf="!c.Teacher">Profesor no indicado</span>
+                      </ion-card-subtitle>
+                    </ion-card-header>
+
+                    <ion-card-content>
+                      <p class="muted" *ngIf="c.Course_type">Tipo: {{ c.Course_type }}</p>
+                      <p class="muted" *ngIf="c.Course_Date">Fecha: {{ c.Course_Date }}</p>
+                      <p class="desc" *ngIf="c.Course_description">{{ c.Course_description }}</p>
+
+                      <ion-button expand="block" class="primary-btn" (click)="adquirir(c)">
+                        <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+                        Adquirir gratis
+                      </ion-button>
+                    </ion-card-content>
+                  </ion-card>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- MIOS -->
+      <div *ngIf="segment === 'mios'">
+        <ion-card class="panel-card">
+          <ion-card-header>
+            <ion-card-title>Mis cursos</ion-card-title>
+          </ion-card-header>
+
+          <ion-card-content>
+            <div *ngIf="mios.length === 0" class="empty">
+              Aún no has adquirido cursos.
+            </div>
+
+            <ion-grid *ngIf="mios.length > 0">
+              <ion-row>
+                <ion-col size="12" size-md="6" size-lg="4" *ngFor="let c of mios">
+                  <ion-card class="course-card owned">
+                    <ion-card-header>
+                      <ion-card-title>{{ c.Name }}</ion-card-title>
+                      <ion-card-subtitle>
+                        <span *ngIf="c.Teacher">Profesor: {{ c.Teacher }}</span>
+                        <span *ngIf="!c.Teacher">Profesor no indicado</span>
+                      </ion-card-subtitle>
+                    </ion-card-header>
+
+                    <ion-card-content>
+                      <p class="muted" *ngIf="c.Course_type">Tipo: {{ c.Course_type }}</p>
+                      <p class="muted" *ngIf="c.Course_Date">Fecha: {{ c.Course_Date }}</p>
+                      <p class="desc" *ngIf="c.Course_description">{{ c.Course_description }}</p>
+
+                      <ion-badge color="success">Adquirido</ion-badge>
+                    </ion-card-content>
+                  </ion-card>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+    </div>
+  </section>
+</ion-content>

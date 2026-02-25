@@ -1,0 +1,86 @@
+.dash-toolbar .dash-title {
+  font-weight: 700;
+}
+
+.dash-hero {
+  position: relative;
+  padding: 70px 16px 60px;
+  background: linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%);
+  overflow: hidden;
+}
+
+.dash-hero-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.15;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.45), transparent 55%);
+}
+
+.dash-hero-content {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+  color: #fff;
+}
+
+.hero-badge { margin-bottom: 16px; }
+.hero-title { font-size: 44px; font-weight: 800; margin: 0 0 8px; }
+.hero-subtitle { margin: 0; opacity: 0.95; }
+
+.section-padding {
+  padding: 24px 0 40px;
+  background: #0f0f10;
+  min-height: calc(100vh - 200px);
+}
+
+.container {
+  width: min(1100px, calc(100% - 24px));
+  margin: 0 auto;
+}
+
+.seg {
+  margin: 12px 0 18px;
+}
+
+.panel-card {
+  background: rgba(255,255,255,0.06);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+}
+
+.panel-card ion-card-title {
+  color: #fff;
+}
+
+.empty {
+  color: rgba(255,255,255,0.75);
+  padding: 8px 0;
+}
+
+.course-card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.course-card ion-card-title {
+  font-weight: 800;
+}
+
+.muted {
+  color: rgba(0,0,0,0.65);
+  margin: 6px 0;
+}
+
+.desc {
+  margin: 10px 0 14px;
+}
+
+.primary-btn {
+  --border-radius: 14px;
+  font-weight: 700;
+}
+
+.owned {
+  border: 1px solid rgba(16, 220, 96, 0.35);
+}
